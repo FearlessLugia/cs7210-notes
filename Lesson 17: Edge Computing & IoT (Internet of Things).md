@@ -4,11 +4,15 @@ Source: [Lesson 17 — Video](https://www.youtube.com/watch?v=TRxUTGHvNOU)
 
 ## 1. Introduction
 
+![Lesson 17 slide 2: 1. Introduction](slides/lesson-17/page-02.png)
+
 In this lesson, we will talk about distributed edge computing and IoT.
 
 We will summarize recent trends around new types of components and infrastructure in the computing landscape. Specifically, we will touch on edge computing and the Internet of Things and give few examples of how these trends change the distributed systems assumptions and designs.
 
 ## 2. Tiers in Computing
+
+![Lesson 17 slide 4: 2. Tiers in Computing](slides/lesson-17/page-04.png)
 
 Let's first see what is edge computing.
 
@@ -26,11 +30,15 @@ This is a combination of limitations related to physics, as in the speed of ligh
 
 ### 2.3. The Edge Tier
 
+![Lesson 17 slide 5: 2. Tiers in Computing](slides/lesson-17/page-05.png)
+
 In response, a new tier of the infrastructure is emerging outside of data centers in the access regions of the network closer to end-users and devices. This can come in many shapes and forms.
 
 Microdata centers deployed in enterprise locations, such as in Starbucks or Chick-fil-A restaurants, deployed in vehicles, or even in some portable form factors.
 
 ### 2.4. Low-Power Devices and IoT
+
+![Lesson 17 slide 6: 2. Tiers in Computing](slides/lesson-17/page-06.png)
 
 Finally, there is another emerging tier based on very low-end and low-power devices. To encapsulate some basic sensing capabilities and connectivity that will allow them to generate data and send that data, and potentially also some small amount of on-device compute capabilities to perform certain classes of data processing, or to act as actuators so that certain actions can be triggered in the environment.
 
@@ -38,11 +46,15 @@ Many of these do not have a reliable source of energy, and the programming appli
 
 ### 2.5. A New Computing Landscape
 
+![Lesson 17 slide 7: 2. Tiers in Computing](slides/lesson-17/page-07.png)
+
 In a recent paper, The Computing Landscape of the 21st Century, presented at Hot Mobile in 2019, Satya and his co-authors identified these four tiers of the modern distributed systems as presenting a new computing landscape.
 
 The differences among these tiers with respect to the device capabilities, the usage models, and the application requirements are so stark that this trend presents a need and opportunities to change the design assumptions around the distributed system designs in these new environments.
 
 ## 3. Why Edge Computing?
+
+![Lesson 17 slide 9: 3. Why Edge Computing?](slides/lesson-17/page-09.png)
 
 Let's look a little bit more at the edge computing tier. You may be hearing the buzzword, but what really is the motivation for this trend?
 
@@ -50,9 +62,13 @@ There is a continuous increase in traffic volume, in number of devices, and in w
 
 Cisco, for instance, publishes frequently a report called the Virtual Network Index, which tracks these trends. If we take a look at one of these reports that presents this historical data and projections for a five-year period, we observe this increase both in the number of connected devices, in the amount of raw data, and also in the demand for wireless connectivity.
 
+![Lesson 17 slide 10: 3. Why Edge Computing?](slides/lesson-17/page-10.png)
+
 This demand, in large part, is created by the emergence of new types of workloads, which demand more bandwidth, which demand better connectivity with better latency guarantees, or a combination of both.
 
 ### 3.1. Changes in Connectivity Demand
+
+![Lesson 17 slide 11: 3. Why Edge Computing?](slides/lesson-17/page-11.png)
 
 Also, providing connectivity requires capacity forecasting and planning to determine where and how much infrastructure should be deployed. The pandemic has shifted this almost overnight. This heat map of the Bay Area illustrates the change in connectivity demand in the Bay Area in March 2020, with the red area seeing decrease and the green area seeing increase in the demand for connectivity. You can notice that the increase is not in the traditional hot spots of the technology companies. Instead, it's more in areas where people live in residential areas.
 
@@ -63,6 +79,8 @@ And some form of these new trends will likely stay beyond the pandemic, given th
 In these scenarios, connectivity is not just about games and videos and infotainment. We rely on proper connectivity and good connectivity for healthcare, for jobs, for education, for basic livelihood services.
 
 ## 4. Closing the Latency/Bandwidth Gap
+
+![Lesson 17 slide 13: 4. Closing the Latency/Bandwidth Gap](slides/lesson-17/page-13.png)
 
 How do we close this gap?
 
@@ -76,6 +94,8 @@ So basically, we cannot just assume that we will roll out the new technology gen
 
 ### 4.2. Open-Source Infrastructure and Cost
 
+![Lesson 17 slide 14: 4. Closing the Latency/Bandwidth Gap](slides/lesson-17/page-14.png)
+
 Part of the reason why the rollout of new technologies is slow is related to cost. With respect to particular the mobile network infrastructure, one of the things, one of the trends that address the cost factor is a movement toward open-source software stacks and commodity hardware.
 
 There are a number of open-source efforts that provide hardware specifications, that provide open-source implementations of mobile network stacks, including the radio stacks and the stack for the core of the network, as well as prototypes of mobile network systems that sort of allow some sort of federated model of different participants to engage in the network.
@@ -83,6 +103,8 @@ There are a number of open-source efforts that provide hardware specifications, 
 Some of these efforts have roots in academic projects, such as a project presented at NSDI about an open-source network to address some connectivity gaps in certain regions in Southeast Asia, but many of them are backed by real commercial entities, big companies, both from the telecom space and also, in general, companies such as Facebook.
 
 ### 4.3. Moving Computation to the Edge
+
+![Lesson 17 slide 15: 4. Closing the Latency/Bandwidth Gap](slides/lesson-17/page-15.png)
 
 These efforts show promise, but there is another way that as technologies that we're trained to solve resource bottlenecks.
 
@@ -96,27 +118,39 @@ As a concept, edge computing can be pretty broad and it can refer to infrastruct
 
 ## 5. Is Edge Computing New?
 
+![Lesson 17 slide 17: 5. Is Edge Computing New?](slides/lesson-17/page-17.png)
+
 Now, is edge computing really new? We have had different types of content delivery networks for a long time. The same report from Cisco that summarizes certain trends regarding the use of the network infrastructure in the world today summarizes that over half of the Internet traffic, even back in 2017, has been served through CDNs and that number is just growing at a very substantial rate.
 
 Now CDNs, as we know, are formed by servers deployed at different locations, many different locations, closer to the end-users with the goal of offering to end-users better connectivity with lower latency and in that manner also reducing the backhaul bandwidth demand on the Internet infrastructure. In that sense, this has a very similar goal to what we said edge computing is trying to solve.
 
 ### 5.1. Comparing CDN and Mobile Infrastructure
 
+![Lesson 17 slide 18: 5. Is Edge Computing New?](slides/lesson-17/page-18.png)
+
 However, if we look in more detail at the CDN solutions, we'll see that we're talking about deployments of infrastructure. It's something that's on the order of a few thousands of locations globally. In addition, this infrastructure is largely owned and operated by the CDN providers themselves.
+
+![Lesson 17 slide 19: 5. Is Edge Computing New?](slides/lesson-17/page-19.png)
 
 If we look at the mobile infrastructure alone, we observe that there are one to two order of magnitude more infrastructure points. These maps are based on data gathered from the FCC a few years ago in 2017. The FCC requires that any antennas, any points of presence are registered with the FCC and so this is where the data is coming from. And we observe that there's something on the order of several hundreds of thousands of cellular tower locations in the U.S. alone and tens of thousands of locations of central offices that are used by the mobile network companies.
 
 This is a substantially larger distribution of these edge compute endpoints compared to the few thousands of global locations that we reported regarding the CDN.
 
+![Lesson 17 slide 20: 5. Is Edge Computing New?](slides/lesson-17/page-20.png)
+
 To leverage this infrastructure, mobile network operators are also partnering with traditional cloud providers with the goal of transforming this new compute tier into the next cloud frontier.
 
 ### 5.2. Different Types of Edge Locations
+
+![Lesson 17 slide 21: 5. Is Edge Computing New?](slides/lesson-17/page-21.png)
 
 That doesn't mean that the mobile networks are the only solution for the edge tier. A report called State of the Edge provides a taxonomy of the different types of edge locations and that includes the wireless or the cellular access points, aggregation points deeper in the network, but also an edge tier that's coupled with the devices themselves. For instance, a drone or a car or a camera can both be viewed as a device generating data but also they have sufficient compute resources to offer edge compute capabilities for certain classes of applications.
 
 These various edge tiers will require proper software stacks in order to be effectively used, managed, programmed, and there are a number of solutions that are emerging broadly in the technology landscape.
 
 ## 6. Edge Computing Drivers
+
+![Lesson 17 slide 23: 6. Edge Computing Drivers](slides/lesson-17/page-23.png)
 
 Let's look again at the drivers behind edge computing. We said speed of light is one of the drivers. We have to have the ability to deploy a service close enough.
 
@@ -130,6 +164,8 @@ Interestingly, while 5G is both an enabler for MEC in many of these use cases, i
 
 ### 6.1. Latency Requirements
 
+![Lesson 17 slide 24: 6. Edge Computing Drivers](slides/lesson-17/page-24.png)
+
 In terms of latency, some common numbers around MEC and edge computing in general include mentions of latency guarantees sub 10 milliseconds or sub 20 milliseconds.
 
 This is an interesting illustration that was presented a few years ago at a keynote given by Pablo Rodriguez from Telefonica and it classifies a number of different use cases in these different latency bands.
@@ -142,11 +178,15 @@ If we think about today's cloud and CDN infrastructure, there are ways to reach 
 
 ### 6.2. Bandwidth Requirements
 
+![Lesson 17 slide 25: 6. Edge Computing Drivers](slides/lesson-17/page-25.png)
+
 With respect to bandwidth as a driver, in a recent paper, The Emerging Landscape of Edge Computing, a group of researchers from Microsoft included a survey of the available data rates for different types of technologies in different countries. We observed that there is a large range of differences across both countries, across technologies, and with some exceptions, most of these exhibit an order of magnitude difference in the download versus upload capabilities.
 
 And this is a problem since many of the use cases we mentioned have similar or even higher demand for uplink bandwidth.
 
 ### 6.3. Examples of Edge Adoption
+
+![Lesson 17 slide 26: 6. Edge Computing Drivers](slides/lesson-17/page-26.png)
 
 The same paper also surveys the current adoption of this trend and a number of different use cases across different industries.
 
@@ -155,6 +195,8 @@ Chick-fil-A, for instance, the Atlanta-based fast food chain, has an in-house te
 A project from Microsoft Research called FarmBeats developed services for low-cost monitoring of large agricultural areas using a combination of mobile drones, low-cost base stations, and also the unused portions of the TV spectrum called white bases.
 
 ## 7. Distributed Edge Computing
+
+![Lesson 17 slide 28: 7. Distributed Edge Computing](slides/lesson-17/page-28.png)
 
 So what is so different about edge computing compared to what we have been doing so far when it comes to distributed computing? Can we not just take the same set of technologies used in data centers and just use them across the distributed resources at the edge?
 
@@ -196,6 +238,8 @@ Techniques that are built in with proper assumptions will be important to delive
 
 ## 8. IoT and Distributed Transactions
 
+![Lesson 17 slide 30: 8. IoT and Distributed Transactions](slides/lesson-17/page-30.png)
+
 So let's look now at an example of how distributed computing concepts may need to be extended or modified as a result of these new infrastructure tiers and applications.
 
 For instance, consider edge services supporting IoT-based applications such as those in a home. Backend services deployed in the cloud interact with one or more gateways in the home, and these in turn interact with multiple smart devices, which provide updates from the environment that they sense, and they also present some interface to actuators that accept commands or messages to trigger some actions in the home.
@@ -204,11 +248,15 @@ We'll look at some examples from the paper Transactuations, where transactions m
 
 ### 8.1. Intrusion Detection and Physical State
 
+![Lesson 17 slide 31: 8. IoT and Distributed Transactions](slides/lesson-17/page-31.png)
+
 Here's an example that's shown in the paper that involves an intrusion detection application, a couple of types of devices, motion detection device, and an alarm.
 
 If we program an application for this kind of environment, it may look like something like what's illustrated here. The motion detector may be a camera with some local processing logic. A gateway can simply coordinate the execution of this application and may perform some additional processing.
 
 Once the motion is detected, the alarm is triggered, and it makes sense to set the alarm state as triggered to avoid redundant actions.
+
+![Lesson 17 slide 32: 8. IoT and Distributed Transactions](slides/lesson-17/page-32.png)
 
 However, these two operations, alarm strobe that triggers the alarm and state alarm active, which sets the state of the alarm as activated, are two separate operations, and they involve separate variables or separate pieces of state. One writes some application level state regarding the state of the alarm, and the other one writes to some control register that will cause the alarm to rank.
 
@@ -224,15 +272,23 @@ And although we can conceive a way to program this particular intrusion detectio
 
 ### 8.3. Three Types of Dependencies
 
+![Lesson 17 slide 34: 8. IoT and Distributed Transactions](slides/lesson-17/page-34.png)
+
 The problems are fundamentally attributed to three cases of dependencies.
 
 The first dependency concerns situations where an actuation action is dependent on the sensing variable. So here the actuation of the fans depends on the CO2 value. This means that the actuation should not be triggered if the sensed value or the read value does not satisfy this predicate.
 
+![Lesson 17 slide 35: 8. IoT and Distributed Transactions](slides/lesson-17/page-35.png)
+
 The second dependency concerns dependencies among updates to the application state and the sensed value or value that is read.
+
+![Lesson 17 slide 36: 8. IoT and Distributed Transactions](slides/lesson-17/page-36.png)
 
 And the third one concerns dependencies among the updates to the application level state and the actuation actions. This is the dependency we observed in the intrusion detection case where we needed to make sure that both the application level state and the actuation are either both of these performed or neither one of them takes place.
 
 ## 9. Transactuations
+
+![Lesson 17 slide 38: 9. Transactuations](slides/lesson-17/page-38.png)
 
 Since distributed transactions cannot help, the authors in this paper propose a new concept which is natively designed for the IoT Edge and it's called transactuations.
 
@@ -250,11 +306,15 @@ The actuation policy expresses the dependencies among the updates to the applica
 
 The programming model also assumes that programmers specify the desired behavior of transaction success or failure. So this is essentially what has to happen on commit or abort.
 
+![Lesson 17 slide 39: 9. Transactuations](slides/lesson-17/page-39.png)
+
 The result is that it becomes possible with a programming model like this to describe the operations in the system and then to make some guarantees regarding the atomic durability of the actuations that take place in the environment.
 
 Also, this type of system provides enough information so that one can schedule the different updates or can control actually when the different updates are performed and therefore avoid certain concurrency bugs.
 
 ### 9.3. Sensing and Actuation Invariants
+
+![Lesson 17 slide 40: 9. Transactuations](slides/lesson-17/page-40.png)
 
 The two concepts key in expressing transactuations and then building a runtime that will enforce them are the sensing and actuation invariants.
 
@@ -270,11 +330,15 @@ For instance, one example of this is that the actuation policy can specify that 
 
 ### 9.4. Execution and Commit
 
+![Lesson 17 slide 41: 9. Transactuations](slides/lesson-17/page-41.png)
+
 The resulting runtime then has sufficient information to insert checks at appropriate places for the different invariants and for the policies that it needs to enforce and to determine when to start or when to commit a transaction and how to ensure that a serializable ordering among concurrent transactions is enforced.
 
 Specifically, a transaction execution will start when the sensing policy is satisfied, the ordering of the device actuations will be determined so as to avoid any rollbacks which are not going to be possible, and then the final commit will be performed based on the actuation policy and this is when any internal state that's dependent on the actuations will actually be updated.
 
 ## 10. Evaluation of Transactuations
+
+![Lesson 17 slide 43: 10. Evaluation of Transactuations](slides/lesson-17/page-43.png)
 
 The paper also evaluates whether transactuations are useful. It performs the evaluation with several different applications. They look to answer several concrete questions regarding the utility of transactuations.
 
@@ -294,6 +358,8 @@ And so the claim is that because they're applicable to different types of applic
 
 ### 10.2. Implementation Comparisons
 
+![Lesson 17 slide 44: 10. Evaluation of Transactuations](slides/lesson-17/page-44.png)
+
 For each application, they start with the original implementation of the application, and then they modify it to ensure that consistency is added, but this is done in more of an ad hoc manner manually. And then they actually re-implement the same application using the transactuation programming system and runtime that they built.
 
 ### 10.3. Code Size Results
@@ -306,6 +372,8 @@ The code increase that's going to be observed when comparing the transactuation 
 
 ### 10.4. Runtime Overheads and Correctness
 
+![Lesson 17 slide 45: 10. Evaluation of Transactuations](slides/lesson-17/page-45.png)
+
 Clearly supporting this transactuation concept is going to introduce some runtime overheads when compared to the original implementation of these applications. Remember, the original implementation of these applications did not necessarily include any of the necessary consistency checks. So in that sense, it can lead to some faulty behaviors.
 
 In many of these cases, the overheads are actually quite modest. In some of the scenarios, clearly they're more significant. Again, this depends on the invariant checks that must be enforced.
@@ -315,6 +383,8 @@ But the 50% average overhead should be acceptable for the fact that the transact
 The paper has much more results if you're interested.
 
 ## 11. Summary
+
+![Lesson 17 slide 47: 11. Summary](slides/lesson-17/page-47.png)
 
 In this lesson, we discuss new trends in distributed computing in terms of the emergence of new infrastructure tiers beyond just those of the mobile client devices and the remote cloud data centers.
 

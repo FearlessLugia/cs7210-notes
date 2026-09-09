@@ -4,6 +4,8 @@ Source: [Lesson 13 — Video](https://www.youtube.com/watch?v=gG50KoxiHE4)
 
 ## 1. Introduction
 
+![Lesson 13 slide 2: 1. Introduction](slides/lesson-13/page-02.png)
+
 In this lesson, we will discuss several trends from data center systems which have implications on the design of distributed services and applications. We routinely rely on applications which are powered by data center platforms and services. All of these data center-based services are still distributed systems. There are some unique trends that have been present in modern data centers that make certain design points to be more relevant. In this lesson, we will look at some of them.
 
 One relevant trend is the presence of high-end interconnect networks, such as InfiniBand, with RDMA capabilities. Another trend is that of increasing resource heterogeneity. This comes in the form of heterogeneity of the compute resources, such as the presence of accelerators, such as GPUs, TPUs, which are becoming popular for AI workloads. Programmable circuits in the forms of FPGAs, which are also integrated in the high-end network elements, such as NICs and routers or switches.
@@ -11,6 +13,8 @@ One relevant trend is the presence of high-end interconnect networks, such as In
 In this lesson, we'll talk in more detail about heterogeneity which is emerging in the memory and storage hierarchy, primarily through the commercial availability of new types of persistent memory devices. The combination of these trends, coupled with the need to scale to ever larger system configurations in a manner that maximizes the efficiency and utilization of the hardware resources, is leading to resource disaggregation. Finally, we will look at some aspects of the common software stack that are governing the use of data center resources, an example of that being Kubernetes.
 
 ## 2. Datacenter Trends
+
+![Lesson 13 slide 4: 2. Datacenter Trends](slides/lesson-13/page-04.png)
 
 Let's talk about data center trends. You have probably heard many times the statement that Moore's law is coming to an end. Gordon Moore is one of the co-founders of Intel corporation. In 75, he made an observation about the improvements in the chip transistor density, which resulted in increase in performance, and he stated that it follows a doubling trend every year and a half. The observation is referred to as Moore's law, and although it's not actually a law grounded in physics, for a while, it proved to be incredibly accurate.
 
@@ -23,6 +27,8 @@ In response, a number of techniques have emerged at the hardware and software le
 The specialization means that there is not a single commodity component, but many types of heterogeneous components. These heterogeneous components meet the requirements of different types of workloads. In a data center, we have many workloads, and their mix may change over time. To provide greater flexibility how we mix and match different components, one recent trend is to consider disaggregation. This aggregation means that different types of resources can be independently added and scaled. You don't have to buy another Dell server plate just if you want to add more memory to the system, for instance.
 
 ### 2.1. Specialization and Hardware Diversity
+
+![Lesson 13 slide 5: 2. Datacenter Trends](slides/lesson-13/page-05.png)
 
 Here are some examples of the kinds of technologies that have found their way in modern data centers, in part, motivated by the limitations that traditional commodity hardware, such as x86 CPUs, DRAM, and Ethernet networks, have started to experience. In part, because of the changes in the requirements and scale of the workloads. We'll talk about the implications of some of these trends.
 
@@ -38,6 +44,8 @@ In this lesson, we will talk in a little bit more detail on the implications of 
 
 ## 3. What is RDMA?
 
+![Lesson 13 slide 7: 3. What is RDMA?](slides/lesson-13/page-07.png)
+
 We'll start by talking about the impact of capabilities of modern interconnect networks. RDMA stands for remote direct memory access. As the name suggests, a network with RDMA capabilities will make it possible to provide DMA benefits when accessing data on a remote node. Let's remind ourselves here that the benefits of using DMA support is that this specialized DMA engine is involved in moving data among the host and the network, and the host CPU doesn't have to copy the data from one location to the other.
 
 In interconnect with RDMA support, this ability to bypass the CPU is made possible via capabilities that are included in the network adapters, or the NICs, and also the protocols that are used by the endpoints of this interconnect. The specialized protocols and nick designs have resulted in a higher bandwidth and lower latency on these types of interconnect compared to commodity ether networks. For instance, at the same time when you can achieve sub-microsecond memory to memory latency on some of these high-end networks, on a comparable Ethernet network, that would be an approximately order of magnitude slower.
@@ -48,7 +56,11 @@ In terms of InfiniBand specifically, a number of vendors emerged in the early 20
 
 ### 3.1. Two-Sided and One-Sided Communication
 
+![Lesson 13 slide 8: 3. What is RDMA?](slides/lesson-13/page-08.png)
+
 There are two main forms how communication can be performed in RDMA networks. One forum is the so-called two-sided RDMA. This is more similar to traditional send receive operations we are familiar with from using sockets over, say, TCP over Ethernet networks. The two CPUs are involved in the communication. There's still benefits of using an RDMA fabric such as infinibend, because the protocol processing is partially performed on the NIC, and it is faster, and there is no CPU load resulting from the protocol processing itself.
+
+![Lesson 13 slide 9: 3. What is RDMA?](slides/lesson-13/page-09.png)
 
 The other form is one-sided RDMA. Only one endpoint is directly involved in the communication. When one CPU issues a request to read or write data, the destination CPU is completely unaware, and is not involved in it. The NIC will make sure that the remote memory is accessed to read or write the data. One requirement here is that the data is actually present in memory, and that it is pinned and not swapped out to disk, obviously. Also, another requirement is that the source node has permission to access this data, and this permission is also checked by the NIC.
 
@@ -56,9 +68,13 @@ Now, I'm showing the RDMA operations is going directly to the destination memory
 
 ## 4. RDMA-Specialized RPC
 
+![Lesson 13 slide 11: 4. RDMA-Specialized RPC](slides/lesson-13/page-11.png)
+
 RDMA networks are gaining in popularity in data centers, but data center applications and services interact using RPCs. Given the different communication modes in which RDMA can be used, an obvious question is: which one of these should one choose, in particular, when trying to implement RPCs? An initial intuition may be to use the one-sided mode, which provides a unique advantage in RDMA fabrics of not requiring the remote machine to be involved in the processing. However, an RPC often requires some invocation of a remote service too. In the one-sided mode, that service still needs to get executed, which means there may be multiple RTTs over the network required to perform the service invocation, or the service application needs to be redesigned in some manner.
 
 In the two-sided mode, the remote CPU is invoked, but the end-to-end remote service implication can be achieved with a single rt team, which may be favorable in many cases. And again, there is the benefit here of having a faster network to begin with.
+
+![Lesson 13 slide 12: 4. RDMA-Specialized RPC](slides/lesson-13/page-12.png)
 
 There are additional opportunities to further optimize the RPC implementation by taking advantage of different features common in RDMA fabrics, such as InfiniBand. For instance, InfiniBand supports connection or connection-less protocols. Maintaining a connection implies that there is some state associated with each endpoint, which, from the service perspective, poses some limitations on the number of clients which the service can scale to. In order for the destination nick to be able to write to memory, there needs to be some pre-registered pool of memory where data can be placed, and typically, this is associated with a connection. And such approach can lead to some load balancing issues. A feature called shared receive cues allow this data to be aggregated across different connections, and it can improve scalability, though the indirection implies some loss of performance in the unloaded case.
 
@@ -68,21 +84,37 @@ One implementation of RPC that combines some of these features is passed, which 
 
 ## 5. What if Memory is Persistent?
 
+![Lesson 13 slide 14: 5. What if Memory is Persistent?](slides/lesson-13/page-14.png)
+
 Now, what if the destination memory is persistent? For the longest time, we have differentiated memory and storage by storage being persistent, block addressable, large capacity, and fairly slow, and memory, such as drm, being bite addressable, volatile, so non-durable, much orders of magnitude faster, and smaller capacity.
 
-However, for a very long time, we have been looking for ways to achieve so-called persistent memory, something that is bite addressable, in a way similar to DRAM, that has a performance point in terms of latency and bandwidth that's closer to DRAM, but that is also persistent, just like storage technologies, and that can scale to larger capacity. A simplest design point for this type of persistent memory is to essentially add battery to DRAM. Few years ago, a commercial technology from Intel called Optane was released which has these properties of byte addressable persistent memory. It is gaining a lot of popularity in commercial data centers, and is attractive both because it presents a lower cost alternative to scale the capacity of main memory, and also because it presents a much faster tier of the storage stack. So it makes persistent accesses, durable operations, much faster.
+However, for a very long time, we have been looking for ways to achieve so-called persistent memory, something that is bite addressable, in a way similar to DRAM, that has a performance point in terms of latency and bandwidth that's closer to DRAM, but that is also persistent, just like storage technologies, and that can scale to larger capacity. A simplest design point for this type of persistent memory is to essentially add battery to DRAM.
+
+![Lesson 13 slide 15: 5. What if Memory is Persistent?](slides/lesson-13/page-15.png)
+
+Few years ago, a commercial technology from Intel called Optane was released which has these properties of byte addressable persistent memory. It is gaining a lot of popularity in commercial data centers, and is attractive both because it presents a lower cost alternative to scale the capacity of main memory, and also because it presents a much faster tier of the storage stack. So it makes persistent accesses, durable operations, much faster.
+
+![Lesson 13 slide 16: 5. What if Memory is Persistent?](slides/lesson-13/page-16.png)
 
 So what are the options when performing RPCs with the goal of accessing or updating persistent memory? Let's look at the different scenarios in this figure. If we just need to perform a write operation, we can rely on the RDMA NIC to push the data, and it can push the data to the last level cache. The operation completes. However, if we need to perform a persistent write, just pushing the data to the last level cache, it's not sufficient. The cache itself is not persistent, and if there is a power loss, we will lose that update.
 
 So for a persistent write, if we want to achieve the persistent semantics that persistent memory can offer us, we have to make sure that the destination node nick actually pushes the data to the persistent memory controller. It's only once the data accesses the persistent memory controller that's the only time when it enters the persistent domain, so that at that point, the data is persistent. It is important to ensure that data is properly persisted before acknowledging the client, because the client for a persistent operation has some expectations regarding the durability of the data accesses. So if we compare these two operations, clearly, the persistent RDMA operation be much more costly than the persistent write operation.
 
-If we take a look at c here, based on the discussion that we had before, this is one way that we can implement RPCs with the use of RDMA support by relying on RPC send receipts. If we take a look at how it implements the same RDMA write plus flush operation, we now see that these two operations, from an implementation standpoint and from a performance standpoint, will be very similar. In that sense, the use of persistent memory sort of removes some advantage of using RDMA over what we'd get by using just send receive based RPCs.
+If we take a look at c here, based on the discussion that we had before, this is one way that we can implement RPCs with the use of RDMA support by relying on RPC send receipts. If we take a look at how it implements the same RDMA write plus flush operation, we now see that these two operations, from an implementation standpoint and from a performance standpoint, will be very similar.
+
+![Lesson 13 slide 17: 5. What if Memory is Persistent?](slides/lesson-13/page-17.png)
+
+In that sense, the use of persistent memory sort of removes some advantage of using RDMA over what we'd get by using just send receive based RPCs.
 
 ## 6. Disaggregation
+
+![Lesson 13 slide 19: 6. Disaggregation](slides/lesson-13/page-19.png)
 
 Let's take a look at another trend that's gaining popularity in data centers. We mentioned already that there are different types of memory components in data centers: non-volatile memory, and vms, and drams. If we look at the compute, there are CPUs, but also many other types of computational elements in the form of specialized accelerators: GPU, TPUs, tensor processing units, programmable FPGAs. There are also different decisions that one can make about the storage types of devices, there are capacities. The question is then, how to choose the configuration of the servers when putting together all of these components in different types of server configurations in data centers? The insert clearly is going to depend on the workload. However, the workloads change. The exhibit differences in the amount of one versus the other resource type they require. Over time, these things change.
 
 If we end up going ahead with monolithic server configurations, we're going to end up with something that's not flexible. It cannot be elastically scaled with respect to individual resource components. In addition, different workload components may need different amounts of different resources. Trying to design for the worst case will lead to imbalances and major resource inefficiencies.
+
+![Lesson 13 slide 20: 6. Disaggregation](slides/lesson-13/page-20.png)
 
 The answer to these problems is to adapt resource disaggregation. With resource disaggregation, data centers can be built from pools of different resources, such as the pool of server blades with lots of compute, and maybe just a little bit of local memory, and then a pool of just storage resources, a pool of large capacity of volatile DRAM or persistent memory resources. The pools of resources are going to be connected via some fast network, and can be independently scaled, meaning that if there is a need for more resources of certain type, then only that pool can be increased without having to bring proportional amounts of all of the other resource types which would otherwise be wasted.
 
@@ -90,11 +122,17 @@ As an idea, this is not a brand new idea, but it's made possible now because of 
 
 ## 7. Systems Software in Disaggregated Systems?
 
+![Lesson 13 slide 22: 7. Systems Software in Disaggregated Systems?](slides/lesson-13/page-22.png)
+
 So what does the system software stack look like in such a disaggregated system? Traditional operating system stacks include different subsystems, each responsible for different types of resources. If the resources are now disaggregated, the same should be the case with the corresponding OS components. This creates a new type of distributed operating system design which has not been represented in prior OS designs.
 
 ## 8. LegoOS Approach
 
+![Lesson 13 slide 24: 8. LegoOS Approach](slides/lesson-13/page-24.png)
+
 One proposal on how to achieve such a disaggregated operating system is the approach taken in lego OS. Lego OS is a proposal for a disaggregated operating system, first presented in a paper lego OS disseminated distributed OS for hardware resource disaggregation. And this paper won the best paper award at OSDI in 2018. If we look at the illustration here, this is an illustration of a traditional operating system, whether a monolithic or a microkernel design. In this case, the operating system is responsible for all of the hardware resources, and then uses a network to communicate with other similar configurations of servers and operating systems, where again, the OS is going to be responsible for all of the hardware resources on that node.
+
+![Lesson 13 slide 25: 8. LegoOS Approach](slides/lesson-13/page-25.png)
 
 An approach presented about 10 years ago in a paper called multi-kernel, presented a view of a distributed operating system, but for a single monolithic server. In that work, different operating system kernels are responsible for some subset of the resources on the server system. The reason for this approach is to deal with resource heterogeneity. For instance, different kernels may be specialized for different types of resources, for GPUs versus CPUs, or to deal with scale, where each of the kernels is responsible for a smaller number of cores, say the ones associated with a single socket in a server system. Each of the kernels communicates amongst each other with messages, as if this is all a distributed system. Now, there's clearly an optimization where the messages may be exchanged using some shared memory channels as well, since after all, all of this is happening on a single system.
 
@@ -102,7 +140,11 @@ The key thing in the multi-kernel approach is that although there are these diff
 
 ### 8.1. Split-Kernel Monitors
 
+![Lesson 13 slide 26: 8. LegoOS Approach](slides/lesson-13/page-26.png)
+
 The lego OS approach is based on what the authors call the split kernel architecture. Here, each set of resources of a single type is managed not by a complete operating system, but rather by a monitor that's capable of dealing just with that particular resource type. In that sense, the functionality of the entire operating system kernel is split and distributed across the different types of resources.
+
+![Lesson 13 slide 27: 8. LegoOS Approach](slides/lesson-13/page-27.png)
 
 So we'll look now at what the split kernel architecture looks like using an animation from the original paper presentation at 2018.
 
@@ -110,17 +152,45 @@ We're going to split the OS functionality into different monitors, and we're goi
 
 ## 9. Disaggregating CPU and Memory with LegoOS
 
+![Lesson 13 slide 29: 9. Disaggregating CPU and Memory with LegoOS](slides/lesson-13/page-29.png)
+
 Let us look at a concrete example of disaggregating CPU and memory resources in lego OS. We will use again an animation used by the authors during their OSDI presentation. So here is what cp and memory resources look like in a traditional monolithic system.
 
-Now, let's disaggregate the DRAM memory, meaning that this is a separate hardware component that is reachable over a network. When accessing memory, we rely on the MMU and the TLB to determine the appropriate physical address. So it makes sense that the hardware components would be corrugated together with the physical memory DIMMs, so that any load and store instructions issued from different processors can continue using virtual addresses, and can be correctly translated as part of this monitor that's going to be associated with the memory component.
+![Lesson 13 slide 30: 9. Disaggregating CPU and Memory with LegoOS](slides/lesson-13/page-30.png)
 
-From the OS perspective, all of this is typically done by the virtual memory subsystem. This is what's responsible for determining how virtual address regions are mapped to physical memory, who can access them, etc. So what that means is now that we will separate that component from the rest of the OS functionality, and we will co-locate it with the memory resource, since this is the monitor that's directly responsible for the memory hardware resources.
+Now, let's disaggregate the DRAM memory, meaning that this is a separate hardware component that is reachable over a network. When accessing memory, we rely on the MMU and the TLB to determine the appropriate physical address.
 
-The applications executing on the CPUs, the CPUs themselves, they are only going to continue seeing virtual memory addresses. This means that all of the levels of the cache will operate with virtual memory addresses. The translation from virtual to physical addresses is the responsibility of the virtual memory subsystem that's deployed on the physical memory resource pool. So they're going to have to be some computational components that will be able to execute this logic, right? The problem is however, now, memory access that needs to be performed on a cache miss will have to go through the network, and the network is still much slower than the system level interconnect that typically connects CPUs and memory controllers.
+![Lesson 13 slide 31: 9. Disaggregating CPU and Memory with LegoOS](slides/lesson-13/page-31.png)
 
-In order to hide this latency, we're going to add an extended cache, and associate it with the processor component. This can be in the form of adding a large traditional SRAM caches, but SRAM is expensive, so it even makes sense to add a little bit more local memory, such as some amount of DRAM, or some amount of high bandwidth memory. The authors call this the extended cache, or the x cache. It can be managed exclusively by software, or with some hardware assistance, and it will correspond to an inclusive cache, which again, is also going to be accessed via virtual addresses.
+So it makes sense that the hardware components would be corrugated together with the physical memory DIMMs, so that any load and store instructions issued from different processors can continue using virtual addresses, and can be correctly translated as part of this monitor that's going to be associated with the memory component.
+
+![Lesson 13 slide 32: 9. Disaggregating CPU and Memory with LegoOS](slides/lesson-13/page-32.png)
+
+From the OS perspective, all of this is typically done by the virtual memory subsystem. This is what's responsible for determining how virtual address regions are mapped to physical memory, who can access them, etc.
+
+![Lesson 13 slide 33: 9. Disaggregating CPU and Memory with LegoOS](slides/lesson-13/page-33.png)
+
+So what that means is now that we will separate that component from the rest of the OS functionality, and we will co-locate it with the memory resource, since this is the monitor that's directly responsible for the memory hardware resources.
+
+![Lesson 13 slide 34: 9. Disaggregating CPU and Memory with LegoOS](slides/lesson-13/page-34.png)
+
+The applications executing on the CPUs, the CPUs themselves, they are only going to continue seeing virtual memory addresses. This means that all of the levels of the cache will operate with virtual memory addresses. The translation from virtual to physical addresses is the responsibility of the virtual memory subsystem that's deployed on the physical memory resource pool. So they're going to have to be some computational components that will be able to execute this logic, right?
+
+![Lesson 13 slide 35: 9. Disaggregating CPU and Memory with LegoOS](slides/lesson-13/page-35.png)
+
+The problem is however, now, memory access that needs to be performed on a cache miss will have to go through the network, and the network is still much slower than the system level interconnect that typically connects CPUs and memory controllers.
+
+![Lesson 13 slide 36: 9. Disaggregating CPU and Memory with LegoOS](slides/lesson-13/page-36.png)
+
+In order to hide this latency, we're going to add an extended cache, and associate it with the processor component.
+
+![Lesson 13 slide 37: 9. Disaggregating CPU and Memory with LegoOS](slides/lesson-13/page-37.png)
+
+This can be in the form of adding a large traditional SRAM caches, but SRAM is expensive, so it even makes sense to add a little bit more local memory, such as some amount of DRAM, or some amount of high bandwidth memory. The authors call this the extended cache, or the x cache. It can be managed exclusively by software, or with some hardware assistance, and it will correspond to an inclusive cache, which again, is also going to be accessed via virtual addresses.
 
 ## 10. LegoOS Select Experimental Result
+
+![Lesson 13 slide 39: 10. LegoOS Select Experimental Result](slides/lesson-13/page-39.png)
 
 So what's the implication of the design decision in lego OS? To evaluate their proposed ideas, they built a prototype. And in the prototype, they used emulation to evaluate it, because after all, they didn't have a full system of different disaggregated types of resources that they could put together in a totally network-attached manner.
 
@@ -130,12 +200,18 @@ In principle however, there are a number of hardware prototypes that are a bette
 
 These new interconnect standards, they're backed by different consortia that involve multiple industry players. And also, there are some open source programming system and runtimes. One example of that is a system called OpenFAM, open fabric attached memory. And also relevant is a system called firebox that a group at UC Berkeley developed. It's a hardware prototype of a system that has very similar properties as the machine. It's based on RISC-v architecture.
 
+![Lesson 13 slide 40: 10. LegoOS Select Experimental Result](slides/lesson-13/page-40.png)
+
 The entire lagos implementation, as a prototype implementation, i mentioned already, it is based on different existing Linux components, and it relies on over 100 common Linux system calls, and includes over 200 000 lines of code. In terms of the x cache, the x cache is implemented by using a dedicated portion of DRAM, and any cache misses are managed fully in software. The machine that's implementing the memory resource uses all of the available DRAM memory, but only a small number of CPU resources, and just running kernel space functionality for the memory monitor. Similarly, the storage and all of the other global monitors are implemented in a similar way, but by essentially not using all of the resources on some of the server components. And then, the network, the RPC stack that's used in the implementation of legolas, is based on prior implementation of RPC over RDMA by the same group.
 
 ### 10.1. Comparison with Swapping-Based Systems
 
+![Lesson 13 slide 41: 10. LegoOS Select Experimental Result](slides/lesson-13/page-41.png)
+
 There are an experiment in which they compared the lego OS along several different system configurations. They compared it against a system configuration which used Linux, but the Linux system was swapping to an SSD device. A Linux system that was swapping to a RAM disk with local DRAM. And then they use the system called infini swap. Infiniswap is like a swap solution that over an InfiniBand network swaps pages to remotely accessible memory on another node, where all of the communication is over RDMA operations.
 
 They ran a TensorFlow machine learning application using the cipher dataset. In all of the comparisons, they used as a baseline a configuration of Linux with unlimited memory. So in that sense, this graph is going to show a slowdown of all of these four systems when compared to configuration of Linux with unlimited memory. And on the x-axis, they're going to show what is the relative ratio of the extended cache, of the local DRAM that's available on the machine that's executing the processing. For these other systems, this is going to be the configuration of the local memory that's available before any swapping to a SSD, RAM disk, or infinite swap to another remote memory is performed.
+
+![Lesson 13 slide 42: 10. LegoOS Select Experimental Result](slides/lesson-13/page-42.png)
 
 We observe that when there is substantial local memory capacity available, all of these solutions tend to work reasonably well in terms of the relative slowdown of unlimited memory. However, when we take a look at this end of the graph over here, where we have a much less available local memory, the lego OS solution performs multiple times better compared to any of these other solutions. In fact, there is only 30 to 70 percent slowdown of using disaggregated memory, using a system such as lego OS, versus using a server configuration which has unlimited local memory resources. So we give away a little bit of performance in terms of execution time, but ultimately, we end up building a system that has much better elasticity, better fault tolerance, and provides a lot of flexibility in how we pack resources.

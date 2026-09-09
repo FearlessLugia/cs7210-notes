@@ -4,9 +4,13 @@ Source: [Lesson 9 — Video](https://www.youtube.com/watch?v=qVOQ9e2XUCk)
 
 ## 1. Introduction
 
+![Lesson 9 slide 2: 1. Introduction](slides/lesson-09/page-02.png)
+
 In this lesson, we will see how the various concepts we talked about so far come together in providing support for distributed transactions. Specifically, we will look at a system called Spanner, developed by and used at Google. We will also touch briefly on few other design points that are considered in some other solutions to offering support for transactions and distributed systems.
 
 ## 2. What are Distributed Transactions?
+
+![Lesson 9 slide 4: 2. What are Distributed Transactions?](slides/lesson-09/page-04.png)
 
 You're probably already familiar with what a transaction is from other courses. In short, a transaction is a group of operations that need to be applied together in an indivisible manner. For instance, in this illustration, a transaction corresponds to reading the values of a and b from a database, computing new values by executing the functions f1 and then f2, and then writing out those values back in the database. This has to be done with asset properties: stomacity, consistency, isolation, durability.
 
@@ -22,19 +26,27 @@ What that means is that the outcome of a transaction is either that the transact
 
 ### 2.1. Transactions Across Multiple Nodes
 
+![Lesson 9 slide 5: 2. What are Distributed Transactions?](slides/lesson-09/page-05.png)
+
 A distributed transaction is just like a regular transaction, except that it is executed across multiple nodes. The state that needs to get accessed and manipulated resides on multiple nodes. So we still have to ensure the atomicity, isolation, correctness, durability, if needed, but we need to do that by reasoning about the operations when performing on multiple nodes.
 
 A common solution is to rely on a coordinator, or a leader, and this is the node that initiates the transaction, and then executes protocols such as two-faced commit, or Paxos, or Raft, so it's to ensure that all of the nodes are in agreement in how the transaction is proceeding. This has to be done across participants of a single distributed transaction, and also across multiple distributed transactions, since there may be multiple concurrently ongoing transactions in the system.
 
 ## 3. Spanner Brief
 
+![Lesson 9 slide 7: 3. Spanner Brief](slides/lesson-09/page-07.png)
+
 We'll talk now about a system called Spanner. Companies such as Google, Facebook, they have billions of customers or users all over the world. The way they operate is they rely on an underlying data management layer that allows them to distribute the data across data centers which are geographically distributed across the world.
 
 Spanner is a global data management layer developed and used by Google. It was presented in a paper at OSDI in 2012, but this is not just a research paper. Painter is used in production at Google to store state for Google's ads and Google play business, and for other services. It has also been made available as a cloud-based database as a service. It allows applications to rely on familiar SQL queries to interact with the application data, but with the added benefits that this data can then be scaled at global scales. This is something that cannot be achieved by using MySQL cluster as a database.
 
+![Lesson 9 slide 8: 3. Spanner Brief](slides/lesson-09/page-08.png)
+
 To illustrate how Spanner distributes data, let's look at this example that the Google authors originally used. Let's say that we are considering an application which is like a simple social network that has users with friends, and users make posts which can then be seen by their friends. With Spanner, the data of this application will be stored globally and distributed across different geographic locations. At each location, the data that belongs overall to this data store will be partitioned across thousands of servers. We also use the term that the database is sharded across servers. And also, at each geographic location, the data will also be replicated across multiple sites. This redundancy is needed for fault tolerance and availability.
 
 ## 4. Spanner Stack
+
+![Lesson 9 slide 10: 4. Spanner Stack](slides/lesson-09/page-10.png)
 
 Spanner consists of a stack of multiple components. This is a figure from the paper that illustrates what the Spanner stack looked like at the time of the publication of the paper.
 
@@ -54,15 +66,23 @@ Finally, for transactions that span multiple replica sets, they use distributed 
 
 ## 5. Consistency Requirements
 
+![Lesson 9 slide 12: 5. Consistency Requirements](slides/lesson-09/page-12.png)
+
 To see what we need in terms of transactional support, let's look at some of the examples from the paper. Let's look first what happens when we want to perform a read operation. For instance, we want to read the posts made by all our friends in order to display them on our newsfeed like in Facebook. If we're trying to get a consistent view of the state of the updates from the friends, we would need to somehow block all of the incoming rights until we capture that consistent view. This is obviously expensive. Instead, we would like to take a logical snapshot view of the state of the system in some sufficiently recent moment. This is like taking a snapshot of this date at the moment that we want to read it, and then taking the contents of the snapshot to create the view of the news feed page.
 
+![Lesson 9 slide 13: 5. Consistency Requirements](slides/lesson-09/page-13.png)
+
 Now, imagine a Google or Facebook scale system with all its geo-distributed data centers. Clearly, we don't want to block all the writes coming to all of these machines. Remember, each of these locations has multiple data centers, and each has thousands of machines. Taking a snapshot would work, but we talked about the distributed snapshot algorithm. It involves many messages, and capturing such a consistent snapshot across all of these machines will be expensive, maybe even more expensive than blocking the transactions and logging.
+
+![Lesson 9 slide 14: 5. Consistency Requirements](slides/lesson-09/page-14.png)
 
 What do we do? Do we give up on the ability to perform a consistent read? It may be tempting to say that, well, this is just a news feed of friends posts. It's not a big deal if we don't have consistent messages. However, imagine this scenario: you perform two seemingly unrelated operations, one to update your friends list and the other one to update your status post. The two pieces of state could be stored on two different machines, and seemingly, there's no causal relationship among them, so they may be reordered. However, you may very much rely upon the fact that the friends list update you perform to remove your boss from the friends list will be applied in the system, and your boss will be removed indeed from the friends list before you make some posts announcing that you're looking for a new job. And we could have come up with some examples here that have much worse consequences.
 
 In short, consistency matters. In fact, what matters is what we refer to as external consistency, and that the order in which the events are applied in the system must match the order in which the events appeared externally in the real world based on some global wall clock. In other words, if the system has acknowledged that a transaction, transaction 1, has completed at some point of time before transaction 2 started, then it must also guarantee that transaction 2 will see all of the updates that were performed by transaction 1. This property is equivalent to having strict serializability, and we've already talked about the fact that without having a global clog guarantee, we cannot expect to provide strict serializability in a distributed system.
 
 ## 6. True Time
+
+![Lesson 9 slide 16: 6. True Time](slides/lesson-09/page-16.png)
 
 Instead, Google uses a concept called truetime. Time does not correspond to some absolute real time. Instead, it indicates some uncertainty interval around the real time.
 
@@ -71,6 +91,8 @@ For instance, with real time, we have the concept of just reading the real time 
 By giving us a way to reason about the uncertainty interval of time, true time, in a way, makes it possible to have a known unknown, which is better than an unknown unknown, right? Truetime is implemented by using periodic probing of some master clock servers that exist in the data centers. These include both GPS and atomic clocks that exist in the data center, that are deployed along at least some of the servers in the data center. And then depending on the probing period and the probe latency, it is possible to figure out, to compute, this epsilon value that captures some information about the drift in the clocks, about the uncertainty, ultimately, that exists between the clock readings in the system. And this epsilon value indicates how off the local clock could be from global time, and therefore, it gives us this range of uncertainty. In a sense, when we read the time, it could be up to epsilon time units later than what the actual time is at particular point of time, or it could indicate a time that's up to epsilon time units earlier than what the current real time is. And that's what this two epsilon interval corresponds to.
 
 ### 6.1. Choosing a Transaction Timestamp
+
+![Lesson 9 slide 17: 6. True Time](slides/lesson-09/page-17.png)
 
 So let's now see how true time would be used by ongoing transactions in the system to determine a timestamp for those transactions. So use the transaction t. It's happening on one of the notes, and we want to make sure that we associate a timestamp with this transaction so that just by looking at these timestamps we can reason exactly about what was the ordering of all the transactions in the system.
 
@@ -81,6 +103,8 @@ Now, we also have to make sure we take care of some issues on the tail end of th
 So it's possible that this transaction was super quick, you know, maybe just update a counter, but we cannot just immediately commit it, immediately complete the operation, acquire the locks, perform the operation, and commit it. We have to wait for a certain amount of time to make sure that we have these properties for the timestamp that the transaction uses. So this is a commit window that each transaction needs to wait out, and it's essentially two times the average difference among the clocks in the system.
 
 ## 7. Ordering Write Transactions with TT Timestamps
+
+![Lesson 9 slide 19: 7. Ordering Write Transactions with TT Timestamps](slides/lesson-09/page-19.png)
 
 So let's see now what do we do in order to order concurrent write transactions when we use the true time timestamps.
 
@@ -96,6 +120,8 @@ So then, the leader of the transaction will start the consensus algorithm, and t
 
 ### 7.1. Transactions Across Replica Sets
 
+![Lesson 9 slide 20: 7. Ordering Write Transactions with TT Timestamps](slides/lesson-09/page-20.png)
+
 For transactions that span multiple replica sets the approach is similar. One node is the transaction coordinator, and it needs to ensure two things.
 
 First, it needs to ensure that the transaction will commit only if all of the participants in the transaction perform their share of the updates. For this, Spanner uses two-face commit. And then internally, each transaction participant has to make sure that the updates that it needs to perform are consistently replicated to its replica set, and this will be done as described before. To do this, the coordinator starts the transaction, and all the participants acquire the logs that they need and compute their true time timestamp s.
@@ -106,6 +132,8 @@ Again, at this point, in principle, we should be ready to complete the transacti
 
 ### 7.2. The Friends-List Example
 
+![Lesson 9 slide 21: 7. Ordering Write Transactions with TT Timestamps](slides/lesson-09/page-21.png)
+
 So if we now use this protocol and take a look at the example where we were trying to remove the boss from our friends list, this is what would happen. We would start the transaction, and let's say we would get timestamp 6 at the note that has our friends list. Now, another note needs to be involved, or potentially needs to be involved, because we also need to remove ourselves from our boss's friends list, right? From x's friend list. So let's say that note picks eight. This note will log the fact that needs to perform this remove operation, and will respond to the transaction coordinator TC. And it will let it know that its proposed value, the value that it has picked for timestamp, is eight.
 
 So at that point, the two-phase commit across these two, the transaction coordinator and the participant, will let us know to determine that the overall timestamp for the transaction will be eight. And so when we issued the risky post, as long as we give it a later time stamp, we are guaranteed that that the visibility of that operation will be reflected after this transaction of removing ourselves from the boss's friends list has actually completed.
@@ -114,15 +142,21 @@ So in this manner, we're guaranteed using this two phase commit protocol that th
 
 ## 8. Read Transactions
 
+![Lesson 9 slide 23: 8. Read Transactions](slides/lesson-09/page-23.png)
+
 Now let's take a look at how truetime is used to ensure the proper ordering of reads transactions in Spanner. We distinguish among two types of free transactions. One type is called read now transactions. So these kinds of read now transactions are the ones that need to return the current value in the system. As a transaction, still going to have a leader because it may involve state that's distributed across multiple nodes and it may also be distributed across multiple replicas, right? We have to deal with making sure that, dealing with failures, that the state is really the consistent state of that object.
 
 So to order the read transaction relatively to what else is going on in the system, we'll have the leader that determines a save timestamp. So when is it that it's actually going to return? Whenever it returns, the value that it's going to return, that's the now value in the system, but potentially, it will be delayed. This leader will determine the save time stamp. If what's needed is just in a single replica set, then the leader will be the Paxos leader. If what's needed is distributed across multiple replica sets, then we'll do the transaction coordinator that's doing the two-phase commit along with the access replication.
 
 By determining the safe timestamp, this is what we mean. This read now transaction is potentially going to be delayed. What that means is that, you know, when we have situations in the system that there are prepared transactions that are not committed, those kinds of transactions are going to delay reads that are being issued against the data store.
 
+![Lesson 9 slide 24: 8. Read Transactions](slides/lesson-09/page-24.png)
+
 It's possible that, you know, we don't really need to read the value that kind of right now. We just need to read a value that it's some specific timestamp in the past. Those kinds of reads can actually be achieved much more easily, given that our transactions are timestamped. If our transactions weren't timestamped, what we'd need to do, we'd need to run some distributed cut algorithm in order to figure out what are the dependencies, what is a consistent state, and then actually return that state. But here, because we are guaranteed that the timestamps for the transactions do reflect correctly their external ordering, we can just essentially take a snapshot of the system, and then read all the values that we need for, match up their version based on same set of timestamps, and that's going to satisfy these kinds of read operations that want to read at a specific time stamp in the past. So this can be achieved much more easily than if we actually had to run a distributed cut algorithm.
 
 ## 9. No TrueTime?
+
+![Lesson 9 slide 26: 9. No TrueTime?](slides/lesson-09/page-26.png)
 
 So in principle, how do we actually realize this true time? It's not like we have some clock that magically gives us this information about the interval of uncertainty in the system. So a big reason why Spanner was able to achieve this design, it used a combination of GPS and atomic clocks, and it used really fast networking among the nodes in the system. The reports indicate that true time can be achieved with something on the order of a few millisecond uncertainty interval. So what that means is that when we have some operation that's that's ongoing in the system, in the worst case, this is the amount of time that we would have to delay it.
 
@@ -136,6 +170,8 @@ One fun fact is that this CockroachDB system derives its name from what was real
 
 ### 9.1. Optimistic Concurrency Control
 
+![Lesson 9 slide 27: 9. No TrueTime?](slides/lesson-09/page-27.png)
+
 Now, when the system doesn't always guarantee that transactions will wait for the previous one to complete, that creates a situation where multiple overlapping transactions operate on the same data. And so they somehow really depend on the ordering of their reads and rights, and they also depend on the outcome of the transactions, whether the transactions are committed or aborted, because this can then lead to all sorts of problems.
 
 These situations, when we do allow transactions to concurrently execute, are going to require on some more optimistic mechanism. It's not the pessimistic locking, but instead, we'll have to use the optimistic clocking, and we will need something that's referred to as optimistic concurrency control. It's optimistic because we allow the operations to execute concurrently, as opposed to expecting them to acquire all the locks up front as with the way the locking was done in the two-phase locking example that we described in Spanner. But we still need to make sure that the transaction atomicity is preserved, and we have to make sure that isolation requirements, the i from asset, is also maintained. This is what is ultimately going to allow us to ensure that transactions are serializable. Note here though that serializable doesn't necessarily mean that they will be serializable in the exact same order as what is externally visible.
@@ -145,6 +181,8 @@ One popular technique to achieve this is what's called snapshot isolation, and a
 To guarantee correctness, it is necessary to make sure that the order in which the snapshots are used and the order in which they depend upon one another forms a serializable sequence. So if you draw directed lines among the snapshots that a transaction depends on or produces, there shouldn't be a cycle in that graph. If it looks like a cycle will get formed, that's what's an indication of, well, there is a conflict, and then we have to pick a transaction to be imported and restarted.
 
 ## 10. Another DDB Example: AWS Aurora
+
+![Lesson 9 slide 29: 10. Another DDB Example: AWS Aurora](slides/lesson-09/page-29.png)
 
 Spinner is an example of a system that relies on distributed transactions, but distributed transactions are used across all of the big service providers. And another example of a system that makes a different set of design decisions in how it supports distributed state updates is what's used at Amazon in their AWS services with Amazon Aurora.
 
@@ -158,6 +196,8 @@ Now, one problem is that as a result there are a total of six replicas, and ther
 
 ### 10.1. Reducing Replication I/O
 
+![Lesson 9 slide 30: 10. Another DDB Example: AWS Aurora](slides/lesson-09/page-30.png)
+
 So let's look at this i amplification. For instance, one way to distribute the ability of the database to serve database requests is just to create a whole bunch of mirror replicas. So this is what is illustrated in this figure. This is a figure from the Aurora sigma paper. We see however that in order to ensure that the mirror replica is fully consistent, the primary has to send to the mirror all information about the request that it has served in the form of a log, then all the actual data, and all of the metadata. These are these fram files, etc. So there's a lot of data that needs to be communicated across these different replica instances.
 
 Instead, this is what the IO transfers in Aurora look like. Aurora uses only log replication. Log, the information about the operations that were performed on the primary, along with some metadata, is the only thing that gets communicated, that gets sent from the primary to the other replicas. This is possible in part because there is already a distributed shared storage among all the replicas. The observation is that if the storage layer, in the form of a distributed cache or a distributed persistent store, has already been designed and made efficient for data to be accessed in a distributed way, then we don't really need to replicate the same functionality at the level of the distributed operations, at the level of the distributed transactions.
@@ -165,5 +205,7 @@ Instead, this is what the IO transfers in Aurora look like. Aurora uses only log
 The log and the metadata provides sufficient information to execute the replicated operation, to access the necessary data, and to ensure that the operations, read operations in this case, that are visible at each replicas return consistent data. This data may correspond to slightly stale rights, unless other techniques that save use explicit locking are further used in addition with this mechanism.
 
 ## 11. Summary
+
+![Lesson 9 slide 32: 11. Summary](slides/lesson-09/page-32.png)
 
 So in summary, in this lesson, we talked about distributed transactions. Specifically, we discussed what type of system support is needed to make it possible to execute transactions over a distributed state in a way that's meaningful and correct. We described several techniques in the context of the Google system Spanner, and explained how these are achieved by relying on this concept of true time. And then we also mentioned briefly a few other techniques which are used in building support for distributed transactions and mentioned the systems where they're used, so CockroachDB explicitly, and Aurora.

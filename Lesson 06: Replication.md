@@ -4,13 +4,19 @@ Source: [Lesson 6 — Video](https://www.youtube.com/watch?v=Rh4KJ5U5Dw4)
 
 ## 1. Introduction
 
+![Lesson 6 slide 2: 1. Introduction](slides/lesson-06/page-02.png)
+
 We mentioned replication multiple times already. In this lesson, we'll look at a few common replication techniques with the goal of making sure you understand the terminology and the tradeoffs.
 
 ## 2. Goal of Replication
 
+![Lesson 6 slide 4: 2. Goal of Replication](slides/lesson-06/page-04.png)
+
 Let's talk about the goal of replication. With replication, the system maintains the same state at more than one location. The state can be entire files or chunks of files, as with distributed file systems. It can be entire tables, as with distributed databases, or it can be application level state or operating system level execution state that's associated with entire virtual machines, for instance.
 
 Having the same state available at more than one location, this means that different nodes can provide the same service. The same service can be served from multiple locations. For instance, different nodes can serve the same file or file chunk. They can execute the same database queries, or they can execute the same application deployed in different virtual machines, if those virtual machines are replicated.
+
+![Lesson 6 slide 5: 2. Goal of Replication](slides/lesson-06/page-05.png)
 
 There are multiple reasons why replication is useful. One is fault tolerance. This allows us to ensure that even when there is a permanent or a transient failure somewhere in the system, the same service can continue to be delivered. For instance, if the first node storing the database fails and if the database is replicated, then all the state and all the transaction records can be retrieved from the backup replica, and the query can be served from that location. When it comes to virtual machines, a common technique that enterprise businesses use is to replicate a VM to a faraway data center, and this is used as part of a disaster recovery mechanism.
 
@@ -18,13 +24,19 @@ Another reason for replication is to improve the system scalability. For instanc
 
 ## 3. Replication Models
 
+![Lesson 6 slide 7: 3. Replication Models](slides/lesson-06/page-07.png)
+
 There are two main replication models. The first one is called active replication, and the second one is called standby replication, or primary backup.
 
 In active replication, each node is active, can accept and handle requests. For reads, there is not much that needs to be done other than just serving the read. And when a replica receives a request that requires some change to the state, a write operation, an update, it must ensure that those updates are appropriately replicated to all of the other replicas.
 
+![Lesson 6 slide 8: 3. Replication Models](slides/lesson-06/page-08.png)
+
 For standby or primary backup replication, as the name suggests, only one replica at a time is the active one. This is the only replica that serves the request, and all the other ones are on standby. When there is some failure, one of the other replicas needs to intervene and take over as a primary. In the scenario, on a read request, again, there isn't anything that needs to happen. But when there are requests that update the state at the primary node, the primary needs to ensure that those state changes are correctly updated to the other replicas.
 
 ## 4. Replication Techniques
+
+![Lesson 6 slide 10: 4. Replication Techniques](slides/lesson-06/page-10.png)
 
 There are two main techniques that are used to implement replication. These are called state replication, or replicated state machine.
 
@@ -36,13 +48,19 @@ Again, the operation foo is submitted at replica 1 with the intention of having 
 
 ### 4.1. Trade-Offs
 
+![Lesson 6 slide 11: 4. Replication Techniques](slides/lesson-06/page-11.png)
+
 One of the benefits of directly replicating the updated state is that there is no need to re-execute the same operation multiple times. The downside is that the state changes may be large. They may be sort of spread out all over in terms of different file chunks, different portions of the database, and so it may be hard to identify where all the updates are.
 
 In the second scenario, there is no need to send large updates to the state. Copying just of the logs that contain the information about the operations which got executed may be much smaller. However, the downside is that the same operation must be re-executed at each location. And of course, this only is applicable if the execution is deterministic.
 
+![Lesson 6 slide 12: 4. Replication Techniques](slides/lesson-06/page-12.png)
+
 These trade-offs should be considered when determining what's an appropriate replication technique for a given scenario. But regardless of which one is chosen, either technique can be implemented and used both with active or with primary backup replication.
 
 ## 5. Replication and Consensus
+
+![Lesson 6 slide 14: 5. Replication and Consensus](slides/lesson-06/page-14.png)
 
 Regardless of whether replication is performed using state replication or state machine replication, it's important to ensure that the replication is performed correctly. What this means is that we have to make sure that each state update, or the information about each log entry, is reflected at each of the replicas, that the update has the exact same value, and that a consensus can be reached among all of the nodes for what this value is. In that sense, you may execute paxas, a raft, or view stamp replication protocol to ensure the correctness of the replication process.
 
@@ -52,7 +70,11 @@ In that sense, the ordering and the visibility of the updates, meaning when an u
 
 ## 6. Chain Replication
 
+![Lesson 6 slide 16: 6. Chain Replication](slides/lesson-06/page-16.png)
+
 During the previous lesson we talked about consensus. We described that to reach a consensus, regardless of the protocol, there are many messages that need to be exchanged among the leader and the participants. This means that as we add more replicas, the response time for the updates will start increasing. And it will start increasing both because the response has to wait for more round trip times among the different replicas to be completed, but also because each of the replicas that needs to handle the request now also needs to send and receive more messages. So that slows down the capacity of that replica node.
+
+![Lesson 6 slide 17: 6. Chain Replication](slides/lesson-06/page-17.png)
 
 This means that the scalability of the system will start to suffer. For a system to be scalable with respect to the increase in the load, we expect that its performance will not be affected, at least not significantly, as the load increases. And this clearly is not going to be the case here. So can we do better with the question? One answer to this question is to use a technique that's called chain replication which was originally published at OSDI in 2014. In chain replication, let's consider the same scenario of having three replicas r1 through r3, and the first one in chain replication is known as head, and the last one is tail.
 
@@ -60,9 +82,13 @@ Write requests are always sent to the head. When the head receives a write reque
 
 In this case, performing a write will require performing just as many writes as with the more naive technique. However, the replication leader, the node r1 with the write request was received, is only handling the messages that are required to copy, to propagate the write, just to one of the replicas, not to all. This makes the leader much less of a bottleneck compared to the solution where it has to communicate with all nodes.
 
+![Lesson 6 slide 18: 6. Chain Replication](slides/lesson-06/page-18.png)
+
 Read requests are served always from detail, meaning that they're guaranteed to see the latest committed update. One reason for not allowing the reads to be served from the intermediate nodes is that there may be situations where a right, as it's propagating through the chain of replicas, ultimately does not reach the tail. Maybe the tail has failed. In that case, that right will be discarded. That update will not be applied in the system, will not be committed to the system. And if we allow a read operation to see that non-existent update, clearly that system will not behave correctly.
 
 ### 6.1. Benefits and Limitations
+
+![Lesson 6 slide 19: 6. Chain Replication](slides/lesson-06/page-19.png)
 
 So what are the pros and cons of this approach? Clearly, we have greater leader scalability. We can afford to replicate to more nodes, and therefore potentially get better fault tolerance without requiring that the leader sees a increase in the load of messages that it has to submit and receive.
 
@@ -76,11 +102,15 @@ Now, read heavy workloads are important. There are many applications out there t
 
 ## 7. CRAQ
 
+![Lesson 6 slide 21: 7. CRAQ](slides/lesson-06/page-21.png)
+
 So the limitation with chain replication, the problem with chain replication, was that only the tail replica was handling greets. And this is what made chain replication as is not appropriate for workloads with read heavy request patterns.
 
 One solution which addresses this problem is a so-called crack, or chain replication with apportioned queries. This technique builds on the original chain replication technique, but makes several modifications. One is that reads are apportioned, divided among the different replicas in the chain. Queries, by queries, we mean here the read operations, and the rights here continue to be handled by the head replica, by the leader of the chain.
 
 The title of the paper where this technique was described is object storage on crack high throughput chain replication for read mostly workloads, and it's by Jeff Terrance and Michael Friedman. It was originally published at the usnix annual technical conference in online.
+
+![Lesson 6 slide 22: 7. CRAQ](slides/lesson-06/page-22.png)
 
 You can probably immediately see that there is a potential issue with this kind of technique, allowing different replicas to see the reads. We said that rights are only committed once they reach the tail replica. Imagine that at the same time there is a write that's issued at the head that's trying to update a value x to x prime, and at that same time, there is a request for a read that appears at replica 2. Now, the value of the state at r2 is still x. R2 has not yet seen the update to x. So the only possible value that r2 can return when it sees the read is the value x. However, there is this update to x prime that's in progress, so perhaps we should make sure that r2 returns x prime. In fact, r1 may already have updated the value at r2 to x prime. So in that case, r2 has x prime, but this update has not been propagated through the chain. We don't know whether it's going to get committed, and so again, we don't know whether we should return x, the old value, or x prime, the value which just got updated at r2.
 
@@ -98,6 +128,8 @@ The paper also discusses the process of chain management: what happens when inte
 
 ## 8. CRAQ vs CR Scalability?
 
+![Lesson 6 slide 24: 8. CRAQ vs CR Scalability?](slides/lesson-06/page-24.png)
+
 Let's look at the results from one set of experiments presented in the paper that compared the scalability of crack relative to the basic chain replication. The comparison metric in the experiment is a read throughput. It makes sense to use this metric. After all, crack was designed precisely to improve the read throughput of the replication technique.
 
 In the experiment, the authors use a different number of replicas to form a chain, either three replicas or seven replicas, and they use a workload that consists of a mix of writes and reads. All the rights are issued at the head, and are varied from zero writes per second to 100 writes per second, so the rest of the workload is read-based. Remember, in chain replication, the reads are handled by the tail, and in crack, they're going to be distributed among all nodes.
@@ -109,6 +141,8 @@ What we see from these experiments is that the crack technique consistently deli
 For each update in crack, now each of the replicas has to maintain two copies, has to check which of the copies it needs to serve, and this is the reason why the throughput start, for each of the crack bars, starts dropping as the rate of writes in the system increases however, regardless of that, it still delivers higher read throughput compared to chain replication. We also see that crack scales very well with the number of replicas. We would expect that if we now create a system where we introduce seven replicas as opposed to three replicas, that that kind of system will be able to handle much higher number of read requests. We see in this graph that crack 7 does deliver nearly 7x higher read throughput compared to crack 3, crack with 3 replicas.
 
 ## 9. Summary
+
+![Lesson 6 slide 26: 9. Summary](slides/lesson-06/page-26.png)
 
 Let's summarize this lesson. We discussed two main replication models: active and standby, or primary backup. We used several techniques used to implement these models. We talked about state replication versus state machine replication, and we also described chain replication and an improvement upon the classical gene replication solution called crack.
 
