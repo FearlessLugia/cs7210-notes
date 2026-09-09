@@ -1,3 +1,10 @@
 .idea
 
 .venv
+
+course-subtitles
+tmp
+originals
+
+*.py
+*.pdf
