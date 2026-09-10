@@ -10,7 +10,7 @@ Welcome to the first lesson of the distributed computing class: introduction to 
 
 ![Lesson 1 slide 3: References of Note](slides/lesson-01/page-03.png)
 
-There are several papers that provide good source of reference for this lesson. Most of what we will discuss is summarized in the book chapter “What Good Are Models and What Models Are Good” from mlender's textbook distributed systems. Also, there is the white paper describing the fallacies of distributed computing, and finally, we will also make our first reference to the famous so-called CAP theorem. We will go back to the CAP theorem in later lessons again.
+There are several papers that provide good source of reference for this lesson. Most of what we will discuss is summarized in the book chapter “What Good Are Models and What Models Are Good” from Mullender's textbook distributed systems. Also, there is the white paper describing the fallacies of distributed computing, and finally, we will also make our first reference to the famous so-called CAP theorem. We will go back to the CAP theorem in later lessons again.
 
 ## 2. Examples of Distributed Systems
 
@@ -36,9 +36,9 @@ And also if we take a look at individual server platforms, with the many number 
 
 ![Lesson 1 slide 7: Leslie Lamport and the Turing Award](slides/lesson-01/page-07.png)
 
-Now let's more formally define: what is a distributed system? We will start with a quote by Les Little Import. We will mention Leslie Lampert quite a bit in this class, so before getting to the quote, let me tell you a little bit about him.
+Now let's more formally define: what is a distributed system? We will start with a quote by Les Little Import. We will mention Leslie Lamport quite a bit in this class, so before getting to the quote, let me tell you a little bit about him.
 
-Leslie Lampard is a world-renowned computer scientist with a decades-long career spanning some of the most influential organizations in the computing field, most recently at Microsoft Research. Among his many awards and distinctions is the 2013 Turing Award. This is also referred to as the Nobel Prize in computing. The citation used by the award committee credits Leslie Lampard with making fundamental contributions to the theory and practice of distributed and concurrent systems, notably the invention of concepts such as causality and logical clocks, safety and liveness, replicated state machines, and sequential consistency.
+Leslie Lamport is a world-renowned computer scientist with a decades-long career spanning some of the most influential organizations in the computing field, most recently at Microsoft Research. Among his many awards and distinctions is the 2013 Turing Award. This is also referred to as the Nobel Prize in computing. The citation used by the award committee credits Leslie Lamport with making fundamental contributions to the theory and practice of distributed and concurrent systems, notably the invention of concepts such as causality and logical clocks, safety and liveness, replicated state machines, and sequential consistency.
 
 If you're interested in seeing the list of prior touring award winners, you can take a look at this link.
 
@@ -48,13 +48,13 @@ If you have scanned the course syllabus, then you already know that in this clas
 
 In many cases, we will explicitly use these papers, some of which teach distributed computing concepts in humorous and story-like manner. For instance, they talk about Byzantine generals, or about the votes of the ancient Greek parliament and the make-believe island of Paxos.
 
-Leslie Lampard's most recent contributions include his work on TLA plus, a formal specification language and framework that can be used for modeling and formally verifying distributed systems.
+Leslie Lamport's most recent contributions include his work on TLA plus, a formal specification language and framework that can be used for modeling and formally verifying distributed systems.
 
 ### 3.2. Interpreting the Definition
 
 ![Lesson 1 slide 9: Lamport's Definition of a Distributed System](slides/lesson-01/page-09.png)
 
-So let's finally look at Leslie Lampert's definition of distributed systems. His quote: “A distributed system is one in which the failure of a computer you didn't even know existed can render your own computer unusable.” What does this quote mean? A computer you didn't even know existed: that's telling us something, that there are multiple independent components in a distributed system.
+So let's finally look at Leslie Lamport's definition of distributed systems. His quote: “A distributed system is one in which the failure of a computer you didn't even know existed can render your own computer unusable.” What does this quote mean? A computer you didn't even know existed: that's telling us something, that there are multiple independent components in a distributed system.
 
 The failure: that tells us that these components can fail in some way. Perhaps they crash and stop working, or fail transiently, temporarily only and then they get back up to speed. Or maybe they intentionally start misbehaving.
 
@@ -276,7 +276,7 @@ When considering the CAP theorem, it implies that there is this availability ver
 
 It's easy to see that such a trade-off exists. If the network is slow, what are our choices? We either need to provide an answer based on a version of the data that was stored locally, or the layer responds until the system verifies whether the most recent version is indeed stored locally, and that may take some long time and may result in a high response latency.
 
-This observation is summarized in work by Danielle Abadi, and it's abbreviated as pasok. So just like systems can be classified based on the design tradeoffs they make around availability versus consistency, they can be further classified based on the design trade-offs that they make with respect to latency versus consistency. This paper gives some examples of that, but we will mention these trade-offs more explicitly as we describe concrete systems in some of the future lessons.
+This observation is summarized in work by Daniel Abadi, and it's abbreviated as PACELC. So just like systems can be classified based on the design tradeoffs they make around availability versus consistency, they can be further classified based on the design trade-offs that they make with respect to latency versus consistency. This paper gives some examples of that, but we will mention these trade-offs more explicitly as we describe concrete systems in some of the future lessons.
 
 ## 11. Summary
 

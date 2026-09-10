@@ -8,7 +8,7 @@ Source: [Lesson 5 — Video](https://www.youtube.com/watch?v=oN1O1wuzanE)
 
 In this lesson, we will talk about consensus, or about the ability of distributed nodes to reach an agreement. Consensus is an important mechanism which is critical for making forward progress in distributed systems. We will present a theoretical discussion of some of the limitations of guaranteeing that a consensus can be reached, in other words, that progress can be made.
 
-For this, we will discuss the seminal work of Fisher Lynch and Patterson, also known as the FLP theorem. For this, we will talk about the paper impossibility of distributed consensus with one faulty processor. And as the title of their paper suggests, this theorem will prove that under most general assumption it is impossible to guarantee that consensus can be reached in a distributed systems in the event that there is even a single failure.
+For this, we will discuss the seminal work of Fischer Lynch and Paterson, also known as the FLP theorem. For this, we will talk about the paper impossibility of distributed consensus with one faulty processor. And as the title of their paper suggests, this theorem will prove that under most general assumption it is impossible to guarantee that consensus can be reached in a distributed systems in the event that there is even a single failure.
 
 Given that there are distributed systems everywhere, this impossibility clearly has not prevented us from building real practical distributed systems. So we will then provide some hints toward how a practical solution can still be achieved despite this theorem. In the future lessons, we will go into more detail into concrete examples of such practical solutions.
 
@@ -72,7 +72,7 @@ So armed with these definitions, and in the context of the system model, we will
 
 ![Lesson 5 slide 14: 5. FLP Theorem](slides/lesson-05/page-14.png)
 
-Let's finally look at the FLP theorem. The FOP theorem was published in a paper by Michael Fisher, Nancy Lynch, and Michael Patterson. And based on the first initials of the author's last names, this is known as the FOP theorem. The question of whether or not there are theoretical guarantees on whether consensus can always be reached in a distributed system had received a lot of attention prior to this work. This work was considered as a hugely important result and was ultimately awarded with the Dijkstra award, an award named after Edgar Dykstra and given for major contributions to distributed computing.
+Let's finally look at the FLP theorem. The FLP theorem was published in a paper by Michael Fischer, Nancy Lynch, and Michael Paterson. And based on the first initials of the author's last names, this is known as the FLP theorem. The question of whether or not there are theoretical guarantees on whether consensus can always be reached in a distributed system had received a lot of attention prior to this work. This work was considered as a hugely important result and was ultimately awarded with the Dijkstra award, an award named after Edsger Dijkstra and given for major contributions to distributed computing.
 
 Title of the paper is impossibility of distributed consensus with one faulty process. So as the title suggests, the answer to this question is no. In a system with one fault, no consensus protocol can be totally correct.
 
@@ -102,7 +102,7 @@ The next argument made in the proof is that there must be a single event in the 
 
 ![Lesson 5 slide 20: 6. Proof in a Nutshell](slides/lesson-05/page-20.png)
 
-The final argument that they make and show in this paper is that it is possible for this one message that takes the system from one state to another to be sufficiently delayed beyond the run of the admissible schedule, which means that the system will never transition from a vivaland, undecisive, to a univalent, decisive state.
+The final argument that they make and show in this paper is that it is possible for this one message that takes the system from one state to another to be sufficiently delayed beyond the run of the admissible schedule, which means that the system will never transition from a bivalent, undecisive, to a univalent, decisive state.
 
 ![Lesson 5 slide 21: 6. Proof in a Nutshell](slides/lesson-05/page-21.png)
 
@@ -112,7 +112,7 @@ Therefore, they prove that in a system where one faulty node is possible and whe
 
 ![Lesson 5 slide 23: 7. Is Consensus Really Impossible?](slides/lesson-05/page-23.png)
 
-Is consensus really impossible? The result is quite concerning. We know that faults are inevitable. We know that network delays are also inevitable. We cannot guarantee that we can build a system which will have stronger guarantees than just having one fault and asynchronous messages. These are messages that are reordered and delayed but still ultimately deliver. If this is the case, this seems to suggest that FOP is proving that it will be impossible to build a distributed system for which we can guarantee that it can behave correctly.
+Is consensus really impossible? The result is quite concerning. We know that faults are inevitable. We know that network delays are also inevitable. We cannot guarantee that we can build a system which will have stronger guarantees than just having one fault and asynchronous messages. These are messages that are reordered and delayed but still ultimately deliver. If this is the case, this seems to suggest that FLP is proving that it will be impossible to build a distributed system for which we can guarantee that it can behave correctly.
 
 ![Lesson 5 slide 24: 7. Is Consensus Really Impossible?](slides/lesson-05/page-24.png)
 
@@ -124,4 +124,4 @@ These protocols do not contradict the FLP result. Instead, they change some of t
 
 ![Lesson 5 slide 26: 8. Summary](slides/lesson-05/page-26.png)
 
-So let's recap this lesson. We explored the question whether a distributed system can always be guaranteed to be able to reach a consensus. This important question was answered by the paper by Fisher Lynch and Patterson, where they proved the FLP DRM, which says that in a system with one faulty processor and where messages can be reordered and arbitrarily delayed, it is impossible to guarantee that a consensus will always be reached.
+So let's recap this lesson. We explored the question whether a distributed system can always be guaranteed to be able to reach a consensus. This important question was answered by the paper by Fischer Lynch and Paterson, where they proved the FLP theorem, which says that in a system with one faulty processor and where messages can be reordered and arbitrarily delayed, it is impossible to guarantee that a consensus will always be reached.

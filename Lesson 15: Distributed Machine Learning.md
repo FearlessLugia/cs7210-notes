@@ -72,9 +72,9 @@ In order to achieve this, the Gaia system relies on a new synchronization model 
 
 The first is a way to determine what are significant updates. The system does this by exposing an API, that would allow programmers to specify what's significant for their case. And then, the system dynamically computes the significance of the updates to, based on this function, in order to filter out the insignificant ones.
 
-Given the much slower white area network speeds, sometimes, even just the significant updates would take a long time to get copied over to the parameter servers in the other data center. Since we need to make sure that the parameter servers are updated in a synchronous manner, at least for the significant update, guy introduces this ASP barrier. This is a way to stall the workers in that remote data center. This really just means that during a remote sync, some index that specifies the information about the updates that will be sent, this index is going to be sent first so that the remote data center knows to wait.
+Given the much slower wide-area network speeds, sometimes, even just the significant updates would take a long time to get copied over to the parameter servers in the other data center. Since we need to make sure that the parameter servers are updated in a synchronous manner, at least for the significant update, Gaia introduces this ASP barrier. This is a way to stall the workers in that remote data center. This really just means that during a remote sync, some index that specifies the information about the updates that will be sent, this index is going to be sent first so that the remote data center knows to wait.
 
-And finally, to make sure that one data center doesn't become too stale because of the slow white area network speed, the data centers exchange clock information, so they can use this to estimate the staleness and the round trip times, the one speed, and then to determine whether one data center needs to slow down its parameter servers in order for overall, the system to be more in sync.
+And finally, to make sure that one data center doesn't become too stale because of the slow wide-area network speed, the data centers exchange clock information, so they can use this to estimate the staleness and the round trip times, the one speed, and then to determine whether one data center needs to slow down its parameter servers in order for overall, the system to be more in sync.
 
 ![Lesson 15 slide 18: 6. Gaia: An Approximate Synchronous Parallel System](slides/lesson-15/page-18.png)
 
@@ -84,7 +84,7 @@ The design of the system is shown in this figure. Within a data center, workers 
 
 ![Lesson 15 slide 19: 6. Gaia: An Approximate Synchronous Parallel System](slides/lesson-15/page-19.png)
 
-Let's look at a single experiment. This experiment is performed with 11 EC2 servers running in different AWS regions, distributed across their different data centers. In the left hand side, the data centers are in Virginia and California, and in the right-hand side, the data center machines are in Singapore and zapawa.
+Let's look at a single experiment. This experiment is performed with 11 EC2 servers running in different AWS regions, distributed across their different data centers. In the left hand side, the data centers are in Virginia and California, and in the right-hand side, the data center machines are in Singapore and São Paulo.
 
 If we compare the case when the machine learning is performed over a local area network in the data center versus over a wide area network, this is the baseline case, the blue case, we observe a significant drop in performance. The y-axis is normalized execution time, so lower is better. So the fact that these blue bars are so much higher than the gray bars, this indicates how much worse is it to simply use the parameter server in a geo-distributed way in the same way as when we're performing machine learning in a local data center. And of course, when comparing the left and the right hand side bar, we observe that this gap between the blue bar and the gray bar for these three machine learning applications is much greater than in the case when the two data centers are closer together, or rather, connected via a better wide area network.
 
@@ -94,7 +94,7 @@ More importantly, from these results, we observe that Gaia, the orange bars in e
 
 ![Lesson 15 slide 21: 7. Tradeoffs of Using Global Model](slides/lesson-15/page-21.png)
 
-Now, what are some tradeoffs of using a global model? One thing that guy and Google's federated learning have in common, and also the parameter server, is that their goal is to create the best possible global model. A single global model means that there is a single unified model that will be used across the entire system, regardless of location.
+Now, what are some tradeoffs of using a global model? One thing that Gaia and Google's federated learning have in common, and also the parameter server, is that their goal is to create the best possible global model. A single global model means that there is a single unified model that will be used across the entire system, regardless of location.
 
 But a global model is not always needed. There is a lot of locality in the data trends and patterns in different locations. These contexts can be better served by a smaller, more tailored model. Trying to build a good global model is actually much more difficult from the algorithm perspective as well. It has been shown that this leads to overfitting, less accurate models, etc, in these scenarios when the data trends tend to exhibit different properties at the different locations.
 
@@ -146,7 +146,7 @@ For the most part, in this lesson, we were really focused on the training part o
 
 ![Lesson 15 slide 30: 9. Beyond Geo-Distributed Training](slides/lesson-15/page-30.png)
 
-The write lab at Berkeley developed a system called Ray that integrates all of these types of functionalities in a single unified framework. This opens up many efficiencies in the end-to-end process, which otherwise exists when you have to get all of these different types of systems to interact amongst each other, to coordinate, to exchange data. You can check out the Ray paper from OSDI 2018, or you can also see Ian Soyka's keynote from hot storage in 2020. He's also given many other talks on this topic, if you want to learn more.
+The RISELab at Berkeley developed a system called Ray that integrates all of these types of functionalities in a single unified framework. This opens up many efficiencies in the end-to-end process, which otherwise exists when you have to get all of these different types of systems to interact amongst each other, to coordinate, to exchange data. You can check out the Ray paper from OSDI 2018, or you can also see Ion Stoica's keynote from hot storage in 2020. He's also given many other talks on this topic, if you want to learn more.
 
 ## 10. Summary
 

@@ -8,13 +8,13 @@ Source: [Lesson 16 — Video](https://www.youtube.com/watch?v=Jm-bP8UVKEA)
 
 In the earlier lessons, we talked about consensus, and gave several examples of consensus algorithms. One thing all of those examples had in common was the assumption that all nodes behave properly, and that the only way that they can fail is if a node fail stops, or if the network introduces excessive delays or is partitioned.
 
-While we cover more general security topics in other courses, in this lesson, we will revisit the consensus problem, but in the context of more general modes of failures, called Byzantine failures. We will see what we mean by Byzantine failures, and why they add another layer of complexity to achieving consensus. We will look at a famous paper on practical Byzantine fault tolerance, pbf team, and we will briefly explain the relationship between classical approaches to consensus with Byzantine failures, such as PBFD, and popular blockchain technologies.
+While we cover more general security topics in other courses, in this lesson, we will revisit the consensus problem, but in the context of more general modes of failures, called Byzantine failures. We will see what we mean by Byzantine failures, and why they add another layer of complexity to achieving consensus. We will look at a famous paper on practical Byzantine fault tolerance, pBFT, and we will briefly explain the relationship between classical approaches to consensus with Byzantine failures, such as PBFT, and popular blockchain technologies.
 
 ## 2. Byzantine Failure and Byzantine Generals
 
 ![Lesson 16 slide 4: 2. Byzantine Failure and Byzantine Generals](slides/lesson-16/page-04.png)
 
-Let's talk about Byzantine failures and Byzantine generals. We said briefly earlier that Byzantine failures are failures where a node in a distributed system continues executing, but starts sending incorrect messages, either for militias or for some arbitrary reasons. The term Byzantine comes from the classical paper, the Byzantine generals problem, which was published in 82, by Leslie Lampard, jointly with Robert Joshua and Marshall peace.
+Let's talk about Byzantine failures and Byzantine generals. We said briefly earlier that Byzantine failures are failures where a node in a distributed system continues executing, but starts sending incorrect messages, either for militias or for some arbitrary reasons. The term Byzantine comes from the classical paper, the Byzantine generals problem, which was published in 82, by Leslie Lamport, jointly with Robert Shostak and Marshall Pease.
 
 ![Lesson 16 slide 5: 2. Byzantine Failure and Byzantine Generals](slides/lesson-16/page-05.png)
 
@@ -48,7 +48,7 @@ As a reminder, FLP will still hold. So with these ideas, the protocol can guaran
 
 ![Lesson 16 slide 11: 4. Practical Byzantine Fault Tolerance: pBFT](slides/lesson-16/page-11.png)
 
-All of these ideas come together in PBFT, an algorithm for practically achieving Byzantine fault tolerance. The PBFT algorithm was proposed by Miguel Castro and Barbara Liska from MIT, and was presented at OSDI in 99. There were proposed algorithms to solve the Byzantine generals problem before, which also presented the proof for the necessary three of one nodes to tolerate at faults. But at the time that it appeared, pbf team, as the algorithm is known, was the first solution that could be used with high performance, capable of processing large number of operations per second.
+All of these ideas come together in PBFT, an algorithm for practically achieving Byzantine fault tolerance. The PBFT algorithm was proposed by Miguel Castro and Barbara Liskov from MIT, and was presented at OSDI in 99. There were proposed algorithms to solve the Byzantine generals problem before, which also presented the proof for the necessary three of one nodes to tolerate at faults. But at the time that it appeared, pBFT, as the algorithm is known, was the first solution that could be used with high performance, capable of processing large number of operations per second.
 
 ![Lesson 16 slide 12: 4. Practical Byzantine Fault Tolerance: pBFT](slides/lesson-16/page-12.png)
 
@@ -88,7 +88,7 @@ If a pre-prepared message is accepted, then the replica enters the prepare phase
 
 ![Lesson 16 slide 19: 5. pBFT Algorithm](slides/lesson-16/page-19.png)
 
-Once the prepared stage is complete, a replica enters the comment phase. It sends a commit message to all other replicas, and also logs this message. It then waits to the additional 2f matching commits by evaluating a predicate committed local. Once the request is committed, it can be executed, and a response can be sent to the client.
+Once the prepared stage is complete, a replica enters the commit phase. It sends a commit message to all other replicas, and also logs this message. It then waits to the additional 2f matching commits by evaluating a predicate committed local. Once the request is committed, it can be executed, and a response can be sent to the client.
 
 ![Lesson 16 slide 20: 5. pBFT Algorithm](slides/lesson-16/page-20.png)
 
@@ -98,11 +98,11 @@ The paper includes additional detail on the behavior of the PBFT algorithm under
 
 ![Lesson 16 slide 22: 6. Byzantine Consensus vs. Blockchain?](slides/lesson-16/page-22.png)
 
-For those of you familiar with blockchain, some aspects of how we describe the solution to the presenting consensus problem may remind you of that. These days, we've seen a continuous growth in the blockchain space, in terms of the amount of wealth that's accumulated and impacted by these technologies, the diverse applications built on top of blockchain, cryptocurrency, smart contracts, and so forth.
+For those of you familiar with blockchain, some aspects of how we describe the solution to the Byzantine consensus problem may remind you of that. These days, we've seen a continuous growth in the blockchain space, in terms of the amount of wealth that's accumulated and impacted by these technologies, the diverse applications built on top of blockchain, cryptocurrency, smart contracts, and so forth.
 
 ![Lesson 16 slide 23: 6. Byzantine Consensus vs. Blockchain?](slides/lesson-16/page-23.png)
 
-An underlying technology enabling this space is that of a distributed ledger, much like the replicated logs that we needed to keep consistent with Paxos, or rather multipaxus, and PBFT. Distributed ledger is a timestamp sequence of records that is replicated across distributed machines in a consistent, agreed-upon manner. Each node agrees precisely on the order and on the content of the ledger entries, just like with the longs, regardless of failures. In that sense, it encodes the execution of a series of updates or transactions, in their entire history.
+An underlying technology enabling this space is that of a distributed ledger, much like the replicated logs that we needed to keep consistent with Paxos, or rather Multi-Paxos, and PBFT. Distributed ledger is a timestamp sequence of records that is replicated across distributed machines in a consistent, agreed-upon manner. Each node agrees precisely on the order and on the content of the ledger entries, just like with the logs, regardless of failures. In that sense, it encodes the execution of a series of updates or transactions, in their entire history.
 
 Moreover, the ledger must be unique and unchanged, even if some participants in the system try to make changes, or to create an alternative view of the history. And it must achieve that without introducing some centralized clearinghouse for reaching agreements.
 
@@ -134,16 +134,16 @@ Well, research and improvements on Byzantine fault tolerant protocols never real
 
 The details of specific distributed ledger solutions vary with respect to a number of features or design goals, regarding performance, trust assumptions, etc. For instance, very obvious differences exist among permissionless solutions, are meant to be fully decentralized, versus permissioned ones, when there is some subset of trusted parties.
 
-For an interesting perspective on the comparison of blockchain technologies and Byzantine fault tolerance, i recommend an interesting talk that Dahlia Melky gave at the u's next annual technical conference in 2018. The talk also mentions a number of important references in this area that you can find helpful. At the time when she gave this keynote, she was a principal at VMware research, but had subsequently moved on from there to lead the development of the Libra cryptocurrency technology stack, which was backed by Facebook.
+For an interesting perspective on the comparison of blockchain technologies and Byzantine fault tolerance, i recommend an interesting talk that Dahlia Malkhi gave at the USENIX annual technical conference in 2018. The talk also mentions a number of important references in this area that you can find helpful. At the time when she gave this keynote, she was a principal at VMware research, but had subsequently moved on from there to lead the development of the Libra cryptocurrency technology stack, which was backed by Facebook.
 
 ![Lesson 16 slide 28: 7. How to Learn More](slides/lesson-16/page-28.png)
 
-And if you're feeling overwhelmed, you're not alone. A hilarious read on the topic of Byzantine fault tolerance is an article in useneg's login, by James Mickens, titled the status moment. In this article, James jokes about the ability of computer scientists outside of the field of theoretical distributed computing to make sense of the nuanced differences among illustrations of Byzantine fault tolerance algorithms such as the ones we saw in this lesson. And he also jokes about the broad applicability of these values of protocols, by suggesting how it would be used when making lunch plans with your colleagues. I do encourage you to read this article. It is really funny.
+And if you're feeling overwhelmed, you're not alone. A hilarious read on the topic of Byzantine fault tolerance is an article in USENIX's login, by James Mickens, titled the Saddest Moment. In this article, James jokes about the ability of computer scientists outside of the field of theoretical distributed computing to make sense of the nuanced differences among illustrations of Byzantine fault tolerance algorithms such as the ones we saw in this lesson. And he also jokes about the broad applicability of these values of protocols, by suggesting how it would be used when making lunch plans with your colleagues. I do encourage you to read this article. It is really funny.
 
-James, whose career so far includes distributed systems research as part of Microsoft research and a faculty position at Harvard, is known in the community for his outrageously comical talks and writings. In addition to the status moment article that's really related to this lecture, you can also just browse quickly even the abstracts on his web page, the wisdom of James Mickens. In fact, you'll find a number of his talks and writings related to some of the topics that we discuss in this class.
+James, whose career so far includes distributed systems research as part of Microsoft research and a faculty position at Harvard, is known in the community for his outrageously comical talks and writings. In addition to the Saddest Moment article that's really related to this lecture, you can also just browse quickly even the abstracts on his web page, the wisdom of James Mickens. In fact, you'll find a number of his talks and writings related to some of the topics that we discuss in this class.
 
 ## 8. Summary
 
 ![Lesson 16 slide 30: 8. Summary](slides/lesson-16/page-30.png)
 
-In summary, in this lesson, we talked about solutions that allow distributed systems to deal with Byzantine failures. We described what are Byzantine failures and introduce the Byzantine general problem. We described the PBFD algorithm for practical Byzantine fault tolerance for systems with less than a third faulty nodes. And we briefly made some connections between Byzantine fault tolerant work from the distributed computing academic and research community and the more recent work on distributed ledger technologies and blockchain.
+In summary, in this lesson, we talked about solutions that allow distributed systems to deal with Byzantine failures. We described what are Byzantine failures and introduce the Byzantine general problem. We described the PBFT algorithm for practical Byzantine fault tolerance for systems with less than a third faulty nodes. And we briefly made some connections between Byzantine fault tolerant work from the distributed computing academic and research community and the more recent work on distributed ledger technologies and blockchain.
