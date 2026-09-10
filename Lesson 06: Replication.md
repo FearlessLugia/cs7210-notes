@@ -84,9 +84,11 @@ Write requests are always sent to the head. When the head receives a write reque
 
 In this case, performing a write will require performing just as many writes as with the more naive technique. However, the replication leader, the node r1 with the write request was received, is only handling the messages that are required to copy, to propagate the write, just to one of the replicas, not to all. This makes the leader much less of a bottleneck compared to the solution where it has to communicate with all nodes.
 
+Read requests are served always from the tail, meaning that they're guaranteed to see the latest committed update.
+
 ![Lesson 6 slide 18: 6. Chain Replication](slides/lesson-06/page-18.png)
 
-Read requests are served always from the tail, meaning that they're guaranteed to see the latest committed update. One reason for not allowing the reads to be served from the intermediate nodes is that there may be situations where a write, as it's propagating through the chain of replicas, ultimately does not reach the tail. Maybe the tail has failed. In that case, that write will be discarded. That update will not be applied in the system, will not be committed to the system. And if we allow a read operation to see that non-existent update, clearly that system will not behave correctly.
+One reason for not allowing the reads to be served from the intermediate nodes is that there may be situations where a write, as it's propagating through the chain of replicas, ultimately does not reach the tail. Maybe the tail has failed. In that case, that write will be discarded. That update will not be applied in the system, will not be committed to the system. And if we allow a read operation to see that non-existent update, clearly that system will not behave correctly.
 
 ### 6.1. Benefits and Limitations
 
