@@ -102,9 +102,9 @@ Also, because we are reading from the tail only once a update has been propagate
 
 But there are downsides with this technique. One main downside is that it really is not very applicable to workloads that are very read intensive, because such workloads cannot take advantage of any of the intermediate replicas. In that sense, as a technique, it suffers from a low efficiency of the nodes. The intermediate nodes may be very underutilized, particularly in the cases of read heavy workloads.
 
-Now, read heavy workloads are important. There are many applications out there that have several orders of magnitude more reads than writes. So we clearly need to have a technique that works well for read heavy workloads.
-
 ## 7. CRAQ
+
+Now, read heavy workloads are important. There are many applications out there that have several orders of magnitude more reads than writes. So we clearly need to have a technique that works well for read heavy workloads.
 
 ![Lesson 6 slide 21: 7. CRAQ](slides/lesson-06/page-21.png)
 
