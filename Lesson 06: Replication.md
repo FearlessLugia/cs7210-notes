@@ -74,9 +74,11 @@ In that sense, the ordering and the visibility of the updates, meaning when an u
 
 During the previous lesson we talked about consensus. We described that to reach a consensus, regardless of the protocol, there are many messages that need to be exchanged among the leader and the participants. This means that as we add more replicas, the response time for the updates will start increasing. And it will start increasing both because the response has to wait for more round trip times among the different replicas to be completed, but also because each of the replicas that needs to handle the request now also needs to send and receive more messages. So that slows down the capacity of that replica node.
 
+This means that the scalability of the system will start to suffer. For a system to be scalable with respect to the increase in the load, we expect that its performance will not be affected, at least not significantly, as the load increases. And this clearly is not going to be the case here. So can we do better with the question?
+
 ![Lesson 6 slide 17: 6. Chain Replication](slides/lesson-06/page-17.png)
 
-This means that the scalability of the system will start to suffer. For a system to be scalable with respect to the increase in the load, we expect that its performance will not be affected, at least not significantly, as the load increases. And this clearly is not going to be the case here. So can we do better with the question? One answer to this question is to use a technique that's called chain replication which was originally published at OSDI in 2014. In chain replication, let's consider the same scenario of having three replicas r1 through r3, and the first one in chain replication is known as head, and the last one is tail.
+One answer to this question is to use a technique that's called chain replication which was originally published at OSDI in 2014. In chain replication, let's consider the same scenario of having three replicas r1 through r3, and the first one in chain replication is known as head, and the last one is tail.
 
 Write requests are always sent to the head. When the head receives a write request, it replicates it only to the next replica in the chain. Each element in the chain will in turn update the subsequent replica until the tail is reached. When the tail is reached, the tail acknowledges the write.
 
