@@ -112,7 +112,7 @@ So the limitation with chain replication, the problem with chain replication, wa
 
 One solution which addresses this problem is a so-called CRAQ, or chain replication with apportioned queries. This technique builds on the original chain replication technique, but makes several modifications. One is that reads are apportioned, divided among the different replicas in the chain. Queries, by queries, we mean here the read operations, and the writes here continue to be handled by the head replica, by the leader of the chain.
 
-The title of the paper where this technique was described is object storage on CRAQ high throughput chain replication for read mostly workloads, and it's by Jeff Terrace and Michael Freedman. It was originally published at the USENIX annual technical conference in online.
+The title of the paper where this technique was described is object storage on CRAQ high throughput chain replication for read mostly workloads, and it's by Jeff Terrace and Michael Freedman. It was originally published at the USENIX annual technical conference in '09.
 
 ![Lesson 6 slide 22: 7. CRAQ](slides/lesson-06/page-22.png)
 
