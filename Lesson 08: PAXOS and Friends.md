@@ -4,9 +4,13 @@ Source: [Lesson 8 — Video](https://www.youtube.com/watch?v=49yCsAOV3pk)
 
 ## 1. Introduction
 
+In this lesson, we will primarily talk about two consensus algorithms which are widely used in production systems: Paxos and Raft.
+
 ![Lesson 8 slide 2: 1. Introduction](slides/lesson-08/page-02.png)
 
-In this lesson, we will primarily talk about two consensus algorithms which are widely used in production systems: Paxos and Raft. For Paxos, we will base the discussion on the following paper: Paxos Made Simple by Leslie Lamport. And this is not the original Paxos paper, but rather a simplified later presentation of this work. For Raft, we will base the presentation on the paper in search of an understandable consensus algorithm presented at USENIX ATC in 2014. There is an extended version of this work which has some proofs, and that's available on the project Github page.
+For Paxos, we will base the discussion on the following paper: Paxos Made Simple by Leslie Lamport. And this is not the original Paxos paper, but rather a simplified later presentation of this work.
+
+For Raft, we will base the presentation on the paper in search of an understandable consensus algorithm presented at USENIX ATC in 2014. There is an extended version of this work which has some proofs, and that's available on the project Github page.
 
 We will also briefly mention some concrete implementations of consensus-based services, which are based on these algorithms, though they don't necessarily follow them exactly per the original specification.
 
@@ -26,9 +30,9 @@ Keep in mind that we discussed the FLP theorem which said that it was impossible
 
 ## 3. 2PC and 3PC
 
-![Lesson 8 slide 7: 3. 2PC and 3PC](slides/lesson-08/page-07.png)
-
 Two protocols originating from the database community are examples of consensus protocols. These are called two pc, two phase commit, and three pc, three-phase commit.
+
+![Lesson 8 slide 7: 3. 2PC and 3PC](slides/lesson-08/page-07.png)
 
 In the two-phase commit protocol, there is always a coordinator, and it is assumed that this coordinator will not fail. The coordinator proposes a value that all participants need to agree on. The participants vote. The coordinator tallies the votes, and then communicates this decision. This means that it commits the decision at that point. The protocol is simple, but it blocks if there are failures. So it does not guarantee liveness for sure.
 
@@ -52,9 +56,11 @@ Despite the fact that Paxos was demonstrated to be practical, it was a proven co
 
 ## 5. Paxos Made Simple
 
+So let's now talk more about Paxos made simple.
+
 ![Lesson 8 slide 13: 5. Paxos Made Simple](slides/lesson-08/page-13.png)
 
-So let's now talk more about Paxos made simple. Let's specify the system model first.
+Let's specify the system model first.
 
 Paxos is designed for systems with asynchronous communication and non-byzantine process failures. The agents, the participants in the algorithm, they operate at arbitrary speed. They may fail by stopping, and they may restart. The participants in the algorithm have some source of persistent memory to remember information after restarting. This persistent memory in the original parliament version of Paxos was the ledger where the parliamentarians would keep a record of the decrees. Messages in the system can take arbitrarily long to be delivered, can be duplicated, lost, or reordered, but cannot be corrupted.
 
@@ -82,9 +88,11 @@ Essentially, the proposal number, by being part of the messages, it not only all
 
 ## 7. Paxos: Prepare Phase
 
+We will start discussing the prepare phase.
+
 ![Lesson 8 slide 18: 7. Paxos: Prepare Phase](slides/lesson-08/page-18.png)
 
-We will start discussing the prepare phase. Each consensus round in Paxos is driven by an initiator called a proposer, and you can think of this as the leader of the round. The proposer will select proposal number n, and then sends the prepare request with the number n to a majority of acceptors. The number n is a member of a set that's totally ordered over all processes, meaning that there won't be any two processes that will use the same n, and a process will not be reusing the same n twice.
+Each consensus round in Paxos is driven by an initiator called a proposer, and you can think of this as the leader of the round. The proposer will select proposal number n, and then sends the prepare request with the number n to a majority of acceptors. The number n is a member of a set that's totally ordered over all processes, meaning that there won't be any two processes that will use the same n, and a process will not be reusing the same n twice.
 
 If an acceptor receives a prepare request with n that's greater than that of any prepare request to which it has already responded, then it responds with a promise not to accept any more proposals with a number less than this value n. If an acceptor has already accepted a higher numbered proposal, then it will respond with that number so that the proposer knows it has to advance the proposal numbers it will use in the future.
 
@@ -102,9 +110,11 @@ A key thing with Paxos is that it is designed to work correctly even when nodes 
 
 ## 8. Paxos: Accept Phase
 
+Next, let's look at what happens in the accept phase.
+
 ![Lesson 8 slide 22: 8. Paxos: Accept Phase](slides/lesson-08/page-22.png)
 
-Next, let's look at what happens in the accept phase. If a proposer hears back from a majority of acceptors, it sends an accept request to each of those acceptors. The accept requests will have the proposal number n. You also include the value. If based on the responses, the proposer learns that there was a value that was already agreed upon, it will communicate this value. Otherwise, it is free to choose whichever value it wanted to propose. That was foo in our example.
+If a proposer hears back from a majority of acceptors, it sends an accept request to each of those acceptors. The accept requests will have the proposal number n. You also include the value. If based on the responses, the proposer learns that there was a value that was already agreed upon, it will communicate this value. Otherwise, it is free to choose whichever value it wanted to propose. That was foo in our example.
 
 If an acceptor receives an accept request for a proposal number n, it accepts the proposal unless it has already agreed and responded to a prepare request that came from some other proposer and which had a higher number than the number n that it's currently looking at.
 
@@ -114,9 +124,9 @@ So let's continue with the same example. Here, all acceptors agreed to the prepa
 
 ## 9. Paxos: Learn Phase
 
-![Lesson 8 slide 25: 9. Paxos: Learn Phase](slides/lesson-08/page-25.png)
+The prepare and accept phase of the proposal form the write side of the operation of the protocol, when someone needs consensus, when writing a new value in the system, it's trying to change the state somehow. There is also a read phase when the clients access the nodes to learn what has been agreed upon in the distributed system nodes. And this is what we call the learn phase.
 
-The prepare and accept phase of the proposal form the right side of the operation of the protocol, when someone needs consensus, when writing a new value in the system, it's trying to change the state somehow. There is also a read phase when the clients access the nodes to learn what has been agreed upon in the distributed system nodes. And this is what we call the learn phase.
+![Lesson 8 slide 25: 9. Paxos: Learn Phase](slides/lesson-08/page-25.png)
 
 When an acceptor receives a commit message, it knows the value that has indeed been accepted for that proposal ID. The accepted value at that point becomes the decided value, and can be communicated to learners. We can alternatively think that a learner can send a learn or a read request to some of the acceptors, and this is the value that it will receive in response.
 
@@ -132,9 +142,9 @@ To continue with the same example, we stopped here at the proposer sending the c
 
 ## 10. Corner Cases
 
-![Lesson 8 slide 28: 10. Corner Cases](slides/lesson-08/page-28.png)
-
 So with this example, we presented a very simple case. There was only one proposal. No node failed, and the acceptors had not agreed to nor accepted any previous proposals. In practice, this ideal case may not quite work out like that, and all of these other situations may come up.
+
+![Lesson 8 slide 28: 10. Corner Cases](slides/lesson-08/page-28.png)
 
 For instance, there may be a scenario where two of the nodes in the Paxos group are trying to propose something at the same time the way a node chooses a proposal ID is such that it combines some local counter with a node identifier, and this is how the protocol ensures that the IDs can be different. So these two proposals that are happening at the same time will have different proposal IDs based on which they can be ordered. Let's say in this illustration, the acceptors first receive a prepare message from proposal ID number two and agree to it. Now, our proposal ID with number one also shows up, and the prepare message with ID 1 is sent to the acceptors. When they receive this message, they'll realize they've already made a promise to agree to a proposal with a higher number ID, and therefore, they will ignore this message. Proposer 1 will eventually figure out it has no luck. So the proposer one can retry a proposal with a higher number.
 
@@ -168,9 +178,9 @@ With these workarounds, in practice, it becomes extremely unlikely that the live
 
 ## 12. Multi-Paxos
 
-![Lesson 8 slide 34: 12. Multi-Paxos](slides/lesson-08/page-34.png)
-
 Paxos allows the system to agree on a single value. In practice, program executions require entire sequences of updates to the application state, to the database, and so forth. And this is achieved by Multi-Paxos.
+
+![Lesson 8 slide 34: 12. Multi-Paxos](slides/lesson-08/page-34.png)
 
 In Multi-Paxos, each simple single-decree Paxos would be used for agreeing on individual value. For example, this value can correspond to the ID of the node which has a lock. This is a real example of Paxos used based on a service that's used by Google called Chubby.
 
@@ -184,9 +194,11 @@ Once a leader is elected, all values in that view get accepted and learned per P
 
 ## 13. Paxos in Practice
 
+Paxos has been around for quite some time, and there are a number of implementations of the protocol which are used in practice.
+
 ![Lesson 8 slide 37: 13. Paxos in Practice](slides/lesson-08/page-37.png)
 
-Paxos has been around for quite some time, and there are a number of implementations of the protocol which are used in practice. The first known implementation, according to Leslie Lamport himself, is the one that's used at DEC Systems Research in the 90s. This effort is what in part motivated Leslie Lamport to resurrect the old project, the old rejected part-time parliament paper, and to finally have it published.
+The first known implementation, according to Leslie Lamport himself, is the one that's used at DEC Systems Research in the 90s. This effort is what in part motivated Leslie Lamport to resurrect the old project, the old rejected part-time parliament paper, and to finally have it published.
 
 More recently, Paxos has been incorporated, in some cases with some modifications to the specification, in a number of real systems. More famous are the Google Chubby service that we mentioned already in the lock example, and also a similar system that was originally developed and open sourced by Yahoo called Zookeeper. It implements a variant of the Paxos protocol. These systems are used in practice by data center scale applications to deal with lock management, synchronization, so clearly scenarios where consensus is critical.
 
@@ -200,9 +212,11 @@ Given all of this, there is a lot of information available on Paxos online in ma
 
 ## 14. RAFT
 
+Now we'll look at another protocol for consensus called Raft.
+
 ![Lesson 8 slide 40: 14. RAFT](slides/lesson-08/page-40.png)
 
-Now we'll look at another protocol for consensus called Raft. So if Paxos was proven and practical, used in all these systems, why do we need more algorithms? The main reason why this has been the case is tied to understandability. What this means is whether the protocol is indeed sufficiently simple, so that practical implementations can be accomplished per specification. Remember, the specification of the protocol is what is proven. If the implementation doesn't follow the specification, then we cannot guarantee that the implementation is correct. In this case, even trickier as one starts to add optimizations to improve performance. And with Paxos, the argument is that really there is a lot of complexity even in a single agreement round. And in practice, distributed executions need to go through many agreement rounds, and really, we're talking about Multi-Paxos that we care for.
+So if Paxos was proven and practical, used in all these systems, why do we need more algorithms? The main reason why this has been the case is tied to understandability. What this means is whether the protocol is indeed sufficiently simple, so that practical implementations can be accomplished per specification. Remember, the specification of the protocol is what is proven. If the implementation doesn't follow the specification, then we cannot guarantee that the implementation is correct. In this case, even trickier as one starts to add optimizations to improve performance. And with Paxos, the argument is that really there is a lot of complexity even in a single agreement round. And in practice, distributed executions need to go through many agreement rounds, and really, we're talking about Multi-Paxos that we care for.
 
 ![Lesson 8 slide 41: 14. RAFT](slides/lesson-08/page-41.png)
 
@@ -212,9 +226,11 @@ The authors, as part of the paper, did an actual user study to evaluate the unde
 
 ## 15. RAFT Overview
 
+Let's look at a brief overview of Raft.
+
 ![Lesson 8 slide 43: 15. RAFT Overview](slides/lesson-08/page-43.png)
 
-Let's look at a brief overview of Raft. Unlike Paxos and Multi-Paxos, Raft has a distinct leader election phase. Like in Paxos, anyone can be a candidate for a leader, but only a node which receives most votes becomes one, is elected to p1, and the rest are followers.
+Unlike Paxos and Multi-Paxos, Raft has a distinct leader election phase. Like in Paxos, anyone can be a candidate for a leader, but only a node which receives most votes becomes one, is elected to p1, and the rest are followers.
 
 After a leader is elected, the normal operation phase starts, which is that of log replication. During this phase, the leader makes proposals for updates and replicates this information among the followers. Each time a new leader is elected, Raft refers to as a new term. This is similar to what would be called view in Viewstamped Replication, for instance. A leader can be active for an arbitrary duration, or for an arbitrary number of updates to the log replication phase. By explicitly separating the leader election from the log replication phases, Raft makes it easier to reason about the behavior of the system and to keep track of which proposals should be winning proposals versus not.
 
