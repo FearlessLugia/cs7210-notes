@@ -256,9 +256,11 @@ Rule three deals with the fact that there may be a kind of elections when votes 
 
 ## 17. RAFT Log Replication
 
+We will illustrate now the log replication phase.
+
 ![Lesson 8 slide 48: 17. RAFT Log Replication](slides/lesson-08/page-48.png)
 
-We will illustrate now the log replication phase. Each node maintains a log of entries. A log entry contains the information about the operation that was performed, for instance, that x was updated to the value 3. Each entry is identified by the term during which it occurred and the index in the log.
+Each node maintains a log of entries. A log entry contains the information about the operation that was performed, for instance, that x was updated to the value 3. Each entry is identified by the term during which it occurred and the index in the log.
 
 ![Lesson 8 slide 49: 17. RAFT Log Replication](slides/lesson-08/page-49.png)
 
