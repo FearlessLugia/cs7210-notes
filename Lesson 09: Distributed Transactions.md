@@ -4,15 +4,19 @@ Source: [Lesson 9 — Video](https://www.youtube.com/watch?v=qVOQ9e2XUCk)
 
 ## 1. Introduction
 
+In this lesson, we will see how the various concepts we talked about so far come together in providing support for distributed transactions.
+
 ![Lesson 9 slide 2: 1. Introduction](slides/lesson-09/page-02.png)
 
-In this lesson, we will see how the various concepts we talked about so far come together in providing support for distributed transactions. Specifically, we will look at a system called Spanner, developed by and used at Google. We will also touch briefly on few other design points that are considered in some other solutions to offering support for transactions and distributed systems.
+Specifically, we will look at a system called Spanner, developed by and used at Google. We will also touch briefly on few other design points that are considered in some other solutions to offering support for transactions and distributed systems.
 
 ## 2. What are Distributed Transactions?
 
+You're probably already familiar with what a transaction is from other courses.
+
 ![Lesson 9 slide 4: 2. What are Distributed Transactions?](slides/lesson-09/page-04.png)
 
-You're probably already familiar with what a transaction is from other courses. In short, a transaction is a group of operations that need to be applied together in an indivisible manner. For instance, in this illustration, a transaction corresponds to reading the values of a and b from a database, computing new values by executing the functions f1 and then f2, and then writing out those values back in the database. This has to be done with ACID properties: atomicity, consistency, isolation, durability.
+In short, a transaction is a group of operations that need to be applied together in an indivisible manner. For instance, in this illustration, a transaction corresponds to reading the values of a and b from a database, computing new values by executing the functions f1 and then f2, and then writing out those values back in the database. This has to be done with ACID properties: atomicity, consistency, isolation, durability.
 
 For instance, in this illustration, two clients interact with the database, and it stores two shared objects a and b. All of these can be running on the same machine, the clients in the database. If the operations are grouped in a transaction is here, then the transactions have to be executed so that either all of the updates within a transaction are applied to the database or none of them. And also, a transaction is not allowed to execute with inputs that partially see just some of the updates made in another transaction, but not all of them.
 
@@ -34,11 +38,13 @@ A common solution is to rely on a coordinator, or a leader, and this is the node
 
 ## 3. Spanner Brief
 
+We'll talk now about a system called Spanner.
+
 ![Lesson 9 slide 7: 3. Spanner Brief](slides/lesson-09/page-07.png)
 
-We'll talk now about a system called Spanner. Companies such as Google, Facebook, they have billions of customers or users all over the world. The way they operate is they rely on an underlying data management layer that allows them to distribute the data across data centers which are geographically distributed across the world.
+Companies such as Google, Facebook, they have billions of customers or users all over the world. The way they operate is they rely on an underlying data management layer that allows them to distribute the data across data centers which are geographically distributed across the world.
 
-Spanner is a global data management layer developed and used by Google. It was presented in a paper at OSDI in 2012, but this is not just a research paper. Painter is used in production at Google to store state for Google's ads and Google play business, and for other services. It has also been made available as a cloud-based database as a service. It allows applications to rely on familiar SQL queries to interact with the application data, but with the added benefits that this data can then be scaled at global scales. This is something that cannot be achieved by using MySQL cluster as a database.
+Spanner is a global data management layer developed and used by Google. It was presented in a paper at OSDI in 2012, but this is not just a research paper. Spanner is used in production at Google to store state for Google's ads and Google play business, and for other services. It has also been made available as a cloud-based database as a service. It allows applications to rely on familiar SQL queries to interact with the application data, but with the added benefits that this data can then be scaled at global scales. This is something that cannot be achieved by using MySQL cluster as a database.
 
 ![Lesson 9 slide 8: 3. Spanner Brief](slides/lesson-09/page-08.png)
 
@@ -46,9 +52,11 @@ To illustrate how Spanner distributes data, let's look at this example that the 
 
 ## 4. Spanner Stack
 
+Spanner consists of a stack of multiple components.
+
 ![Lesson 9 slide 10: 4. Spanner Stack](slides/lesson-09/page-10.png)
 
-Spanner consists of a stack of multiple components. This is a figure from the paper that illustrates what the Spanner stack looked like at the time of the publication of the paper.
+This is a figure from the paper that illustrates what the Spanner stack looked like at the time of the publication of the paper.
 
 At the bottom of the stack is a layer that ensures durability, provides persistent storage. This is like a distributed file system that makes sure that all the state is ultimately written out to disk, and also replicated for providing fault tolerance and greater availability. In this case, it is organized in files using a follow-on on the Google file system. This was presented as another paper at the SOSP conference in 2003. And one thing to highlight about the system is that it is optimized for operations that include reads and appends, because delete operations are rare.
 
@@ -66,9 +74,11 @@ Finally, for transactions that span multiple replica sets, they use distributed 
 
 ## 5. Consistency Requirements
 
+To see what we need in terms of transactional support, let's look at some of the examples from the paper.
+
 ![Lesson 9 slide 12: 5. Consistency Requirements](slides/lesson-09/page-12.png)
 
-To see what we need in terms of transactional support, let's look at some of the examples from the paper. Let's look first what happens when we want to perform a read operation. For instance, we want to read the posts made by all our friends in order to display them on our newsfeed like in Facebook. If we're trying to get a consistent view of the state of the updates from the friends, we would need to somehow block all of the incoming rights until we capture that consistent view. This is obviously expensive. Instead, we would like to take a logical snapshot view of the state of the system in some sufficiently recent moment. This is like taking a snapshot of this date at the moment that we want to read it, and then taking the contents of the snapshot to create the view of the news feed page.
+Let's look first what happens when we want to perform a read operation. For instance, we want to read the posts made by all our friends in order to display them on our newsfeed like in Facebook. If we're trying to get a consistent view of the state of the updates from the friends, we would need to somehow block all of the incoming writes until we capture that consistent view. This is obviously expensive. Instead, we would like to take a logical snapshot view of the state of the system in some sufficiently recent moment. This is like taking a snapshot of this date at the moment that we want to read it, and then taking the contents of the snapshot to create the view of the news feed page.
 
 ![Lesson 9 slide 13: 5. Consistency Requirements](slides/lesson-09/page-13.png)
 
@@ -82,9 +92,11 @@ In short, consistency matters. In fact, what matters is what we refer to as exte
 
 ## 6. True Time
 
+Instead, Google uses a concept called TrueTime.
+
 ![Lesson 9 slide 16: 6. True Time](slides/lesson-09/page-16.png)
 
-Instead, Google uses a concept called TrueTime. Time does not correspond to some absolute real time. Instead, it indicates some uncertainty interval around the real time.
+Time does not correspond to some absolute real time. Instead, it indicates some uncertainty interval around the real time.
 
 For instance, with real time, we have the concept of just reading the real time and finding out what time it is now. With true time, we can perform several operations. We try to find out true time now. This will return an interval, which will give us what the earliest and the latest real time could be at a given point of time. True time also lets us find out two other pieces of information. One is after how much time are we given a guarantee that that particular time that true time indicates has indeed passed? Or it also gives us a way to find out that time t has definitely not arrived in the system yet.
 
@@ -104,9 +116,9 @@ So it's possible that this transaction was super quick, you know, maybe just upd
 
 ## 7. Ordering Write Transactions with TT Timestamps
 
-![Lesson 9 slide 19: 7. Ordering Write Transactions with TT Timestamps](slides/lesson-09/page-19.png)
-
 So let's see now what do we do in order to order concurrent write transactions when we use the true time timestamps.
+
+![Lesson 9 slide 19: 7. Ordering Write Transactions with TT Timestamps](slides/lesson-09/page-19.png)
 
 First off, we should explain what is the rationale behind the strategy to acquire all the locks up front. This kind of technique is referred to also as pessimistic locking, and we're expecting pessimistically that there are going to be lots of conflicts in the system, so might as well get all the locks up front.
 
@@ -142,9 +154,11 @@ So in this manner, we're guaranteed using this two phase commit protocol that th
 
 ## 8. Read Transactions
 
+Now let's take a look at how TrueTime is used to ensure the proper ordering of reads transactions in Spanner.
+
 ![Lesson 9 slide 23: 8. Read Transactions](slides/lesson-09/page-23.png)
 
-Now let's take a look at how TrueTime is used to ensure the proper ordering of reads transactions in Spanner. We distinguish among two types of free transactions. One type is called read now transactions. So these kinds of read now transactions are the ones that need to return the current value in the system. As a transaction, still going to have a leader because it may involve state that's distributed across multiple nodes and it may also be distributed across multiple replicas, right? We have to deal with making sure that, dealing with failures, that the state is really the consistent state of that object.
+We distinguish among two types of read transactions. One type is called read now transactions. So these kinds of read now transactions are the ones that need to return the current value in the system. As a transaction, still going to have a leader because it may involve state that's distributed across multiple nodes and it may also be distributed across multiple replicas, right? We have to deal with making sure that, dealing with failures, that the state is really the consistent state of that object.
 
 So to order the read transaction relatively to what else is going on in the system, we'll have the leader that determines a safe timestamp. So when is it that it's actually going to return? Whenever it returns, the value that it's going to return, that's the now value in the system, but potentially, it will be delayed. This leader will determine the safe timestamp. If what's needed is just in a single replica set, then the leader will be the Paxos leader. If what's needed is distributed across multiple replica sets, then we'll do the transaction coordinator that's doing the two-phase commit along with the Paxos replication.
 
@@ -156,9 +170,11 @@ It's possible that, you know, we don't really need to read the value that kind o
 
 ## 9. No TrueTime?
 
+So in principle, how do we actually realize this true time?
+
 ![Lesson 9 slide 26: 9. No TrueTime?](slides/lesson-09/page-26.png)
 
-So in principle, how do we actually realize this true time? It's not like we have some clock that magically gives us this information about the interval of uncertainty in the system. So a big reason why Spanner was able to achieve this design, it used a combination of GPS and atomic clocks, and it used really fast networking among the nodes in the system. The reports indicate that true time can be achieved with something on the order of a few millisecond uncertainty interval. So what that means is that when we have some operation that's that's ongoing in the system, in the worst case, this is the amount of time that we would have to delay it.
+It's not like we have some clock that magically gives us this information about the interval of uncertainty in the system. So a big reason why Spanner was able to achieve this design, it used a combination of GPS and atomic clocks, and it used really fast networking among the nodes in the system. The reports indicate that true time can be achieved with something on the order of a few millisecond uncertainty interval. So what that means is that when we have some operation that's that's ongoing in the system, in the worst case, this is the amount of time that we would have to delay it.
 
 Now, if we don't have that, if we have something like the NTP protocol, that's going to introduce something on the order of 100 milliseconds of uncertainty. Waiting for this amount of time and delaying to respond to a transaction by hundreds of milliseconds can completely render the application useless. Any benefit that we may get from the strict ordering may be relevant, because nobody's going to use this application.
 
@@ -172,40 +188,42 @@ One fun fact is that this CockroachDB system derives its name from what was real
 
 ![Lesson 9 slide 27: 9. No TrueTime?](slides/lesson-09/page-27.png)
 
-Now, when the system doesn't always guarantee that transactions will wait for the previous one to complete, that creates a situation where multiple overlapping transactions operate on the same data. And so they somehow really depend on the ordering of their reads and rights, and they also depend on the outcome of the transactions, whether the transactions are committed or aborted, because this can then lead to all sorts of problems.
+Now, when the system doesn't always guarantee that transactions will wait for the previous one to complete, that creates a situation where multiple overlapping transactions operate on the same data. And so they somehow really depend on the ordering of their reads and writes, and they also depend on the outcome of the transactions, whether the transactions are committed or aborted, because this can then lead to all sorts of problems.
 
 These situations, when we do allow transactions to concurrently execute, are going to require on some more optimistic mechanism. It's not the pessimistic locking, but instead, we'll have to use the optimistic locking, and we will need something that's referred to as optimistic concurrency control. It's optimistic because we allow the operations to execute concurrently, as opposed to expecting them to acquire all the locks up front as with the way the locking was done in the two-phase locking example that we described in Spanner. But we still need to make sure that the transaction atomicity is preserved, and we have to make sure that isolation requirements, the i from ACID, is also maintained. This is what is ultimately going to allow us to ensure that transactions are serializable. Note here though that serializable doesn't necessarily mean that they will be serializable in the exact same order as what is externally visible.
 
 One popular technique to achieve this is what's called snapshot isolation, and another term for this is also multiversion concurrency control. The reason that we have oftentimes these two different terms for essentially the same concept is because some of these ideas are also coming from different communities, from the database community, distributed database community, from the concurrency and synchronization, from the more traditional systems community. And we ended up with same ideas, but ultimately different terms.
 
-To guarantee correctness, it is necessary to make sure that the order in which the snapshots are used and the order in which they depend upon one another forms a serializable sequence. So if you draw directed lines among the snapshots that a transaction depends on or produces, there shouldn't be a cycle in that graph. If it looks like a cycle will get formed, that's what's an indication of, well, there is a conflict, and then we have to pick a transaction to be imported and restarted.
+To guarantee correctness, it is necessary to make sure that the order in which the snapshots are used and the order in which they depend upon one another forms a serializable sequence. So if you draw directed lines among the snapshots that a transaction depends on or produces, there shouldn't be a cycle in that graph. If it looks like a cycle will get formed, that's what's an indication of, well, there is a conflict, and then we have to pick a transaction to be aborted and restarted.
 
 ## 10. Another DDB Example: AWS Aurora
 
-![Lesson 9 slide 29: 10. Another DDB Example: AWS Aurora](slides/lesson-09/page-29.png)
-
 Spanner is an example of a system that relies on distributed transactions, but distributed transactions are used across all of the big service providers. And another example of a system that makes a different set of design decisions in how it supports distributed state updates is what's used at Amazon in their AWS services with Amazon Aurora.
 
-The first obvious difference is that this system follows a primary replica architecture. There is a single primary node that can handle read and write operations, and all of the other nodes are only serving greed traffic. That's okay. It makes sense for many real world large-scale distributed applications, which tend to have way more reads than rights. By keeping the rights localized, the system doesn't really have to perform distributed transactions. It makes very different kind of decision.
+![Lesson 9 slide 29: 10. Another DDB Example: AWS Aurora](slides/lesson-09/page-29.png)
+
+The first obvious difference is that this system follows a primary replica architecture. There is a single primary node that can handle read and write operations, and all of the other nodes are only serving read traffic. That's okay. It makes sense for many real world large-scale distributed applications, which tend to have way more reads than writes. By keeping the writes localized, the system doesn't really have to perform distributed transactions. It makes very different kind of decision.
 
 Part of the reason why the system is designed this way is because it has a goal to guarantee availability of the service even under a large number of failures. The Amazon's AWS servers are organized in many zones. Each zone is independently managed domain, potentially at different locations. And instead of a common triplication, Aurora first replicates data to each zone, and then in each zone, it replicates the data to two different locations.
 
 By having all these replicas, Aurora makes it possible to guarantee correctness even if an entire zone is lost, and it does so by relying on quorum. It's going to take votes from all of the replicas where data was replicated, and we'll look to see that a majority of the replicas agree. So in a sense, we have to make sure that outside of a single zone there are enough replicas in order to reach a quorum even if we lose a single zone.
 
-Now, one problem is that as a result there are a total of six replicas, and there's a huge amount of what we call IO amplification. I/O amplification means each time we're trying to perform a write operation, instead, there are so many additional write operations that need to actually be performed in the system. By the way, the Aurora paper was presented at a conference called sigma. It's a conference that's really primarily on database systems.
+Now, one problem is that as a result there are a total of six replicas, and there's a huge amount of what we call IO amplification. I/O amplification means each time we're trying to perform a write operation, instead, there are so many additional write operations that need to actually be performed in the system. By the way, the Aurora paper was presented at a conference called SIGMOD. It's a conference that's really primarily on database systems.
 
 ### 10.1. Reducing Replication I/O
 
 ![Lesson 9 slide 30: 10. Another DDB Example: AWS Aurora](slides/lesson-09/page-30.png)
 
-So let's look at this I/O amplification. For instance, one way to distribute the ability of the database to serve database requests is just to create a whole bunch of mirror replicas. So this is what is illustrated in this figure. This is a figure from the Aurora sigma paper. We see however that in order to ensure that the mirror replica is fully consistent, the primary has to send to the mirror all information about the request that it has served in the form of a log, then all the actual data, and all of the metadata. These are these fram files, etc. So there's a lot of data that needs to be communicated across these different replica instances.
+So let's look at this I/O amplification. For instance, one way to distribute the ability of the database to serve database requests is just to create a whole bunch of mirror replicas. So this is what is illustrated in this figure. This is a figure from the Aurora SIGMOD paper. We see however that in order to ensure that the mirror replica is fully consistent, the primary has to send to the mirror all information about the request that it has served in the form of a log, then all the actual data, and all of the metadata. These are these fram files, etc. So there's a lot of data that needs to be communicated across these different replica instances.
 
 Instead, this is what the IO transfers in Aurora look like. Aurora uses only log replication. Log, the information about the operations that were performed on the primary, along with some metadata, is the only thing that gets communicated, that gets sent from the primary to the other replicas. This is possible in part because there is already a distributed shared storage among all the replicas. The observation is that if the storage layer, in the form of a distributed cache or a distributed persistent store, has already been designed and made efficient for data to be accessed in a distributed way, then we don't really need to replicate the same functionality at the level of the distributed operations, at the level of the distributed transactions.
 
-The log and the metadata provides sufficient information to execute the replicated operation, to access the necessary data, and to ensure that the operations, read operations in this case, that are visible at each replicas return consistent data. This data may correspond to slightly stale rights, unless other techniques that save use explicit locking are further used in addition with this mechanism.
+The log and the metadata provides sufficient information to execute the replicated operation, to access the necessary data, and to ensure that the operations, read operations in this case, that are visible at each replicas return consistent data. This data may correspond to slightly stale writes, unless other techniques that save use explicit locking are further used in addition with this mechanism.
 
 ## 11. Summary
 
+So in summary, in this lesson, we talked about distributed transactions.
+
 ![Lesson 9 slide 32: 11. Summary](slides/lesson-09/page-32.png)
 
-So in summary, in this lesson, we talked about distributed transactions. Specifically, we discussed what type of system support is needed to make it possible to execute transactions over a distributed state in a way that's meaningful and correct. We described several techniques in the context of the Google system Spanner, and explained how these are achieved by relying on this concept of true time. And then we also mentioned briefly a few other techniques which are used in building support for distributed transactions and mentioned the systems where they're used, so CockroachDB explicitly, and Aurora.
+Specifically, we discussed what type of system support is needed to make it possible to execute transactions over a distributed state in a way that's meaningful and correct. We described several techniques in the context of the Google system Spanner, and explained how these are achieved by relying on this concept of true time. And then we also mentioned briefly a few other techniques which are used in building support for distributed transactions and mentioned the systems where they're used, so CockroachDB explicitly, and Aurora.
