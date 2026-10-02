@@ -4,25 +4,29 @@ Source: [Lesson 10 — Video](https://www.youtube.com/watch?v=SzxRULVOfvM)
 
 ## 1. Introduction
 
+We already mentioned consistency, but we will revisit the topic in this lesson.
+
 ![Lesson 10 slide 2: 1. Introduction](slides/lesson-10/page-02.png)
 
-We already mentioned consistency, but we will revisit the topic in this lesson. And to keep the discussion concrete, we will talk about consistency in the context of distributed data stores.
+And to keep the discussion concrete, we will talk about consistency in the context of distributed data stores.
 
 In the previous lesson, we talked about distributed transactions, and how Google Spanner, by relying on GPS and atomic clocks to implement true time, achieves linearizability and external strong consistency for its transactions. In practice however, distributed applications operate across very diverse infrastructure, and the availability of such clocks cannot be always assumed. So for the many such scenarios, it is still important to provide correctness for how the state of the distributed application is accessed and updated. And for this, we need to ensure it is consistent.
 
-So in this lesson, we will talk about consistency. We will ground our discussion in the context of globally distributed data stores, represented as key value stores, and we will illustrate these by describing Facebook's memcache architecture. And then we will talk about several consistency models. And for this, we will rely on the paper COPS don't settle for eventual consistency, which describes some of the issues with several consistency models, and proposes a new model called causal plus consistency.
+So in this lesson, we will talk about consistency. We will ground our discussion in the context of globally distributed data stores, represented as key value stores, and we will illustrate these by describing Facebook's memcache architecture. And then we will talk about several consistency models. And for this, we will rely on the paper COPS don't settle for eventual consistency, which describes some of the issues with several consistency models, and proposes a new model called Causal+ consistency.
 
 ## 2. Why is Consistency Important and Hard?
 
+We gave already an example of what can go wrong in scenarios where we don't have consistency guarantees in some of the previous lectures.
+
 ![Lesson 10 slide 4: 2. Why is Consistency Important and Hard?](slides/lesson-10/page-04.png)
 
-We gave already an example of what can go wrong in scenarios where we don't have consistency guarantees in some of the previous lectures. Here is another illustrative example from a paper called potential dangers of causal consistency, by Peter Baileys and others.
+Here is another illustrative example from a paper called potential dangers of causal consistency, by Peter Baileys and others.
 
 So we have three distributed participants: Bob, Alice, and Carol. And they share some message board. Let's say Bob first announces Sally's sick, and then immediately afterwards, he says Sally's well. Alice sees both updates, and says great news. Carol, on the other hand, only sees Bob's first update, and then Alice's update, so she's majorly confused.
 
-If the message board were a single centralized database, this scenario is unlikely to happen. However, in a distributed system, this is quite possible. Ensuring the correct ordering and propagation of all of these updates is hard in distributed systems because we replicate state to multiple locations in order to deal with failures or to ensure availability and responsiveness of the system regardless of load and network partition. In addition, we also have extensive use of caching as a technique to perform performance.
+If the message board were a single centralized database, this scenario is unlikely to happen. However, in a distributed system, this is quite possible. Ensuring the correct ordering and propagation of all of these updates is hard in distributed systems because we replicate state to multiple locations in order to deal with failures or to ensure availability and responsiveness of the system regardless of load and network partition. In addition, we also have extensive use of caching as a technique to improve performance.
 
-So we need some guarantees on how updates to a distributed state are propagated and become visible externally to the different users of the system. We need guarantees about the ordering of the rights, so that somehow great news doesn't become visible to Carol before the update Sally's well. This is clearly important, but it is made hard by the fact that we maintain multiple copies of the state, and then further complicate it with various forms of failures.
+So we need some guarantees on how updates to a distributed state are propagated and become visible externally to the different users of the system. We need guarantees about the ordering of the writes, so that somehow great news doesn't become visible to Carol before the update Sally's well. This is clearly important, but it is made hard by the fact that we maintain multiple copies of the state, and then further complicate it with various forms of failures.
 
 ### 2.1. Consistency Models and Trade-Offs
 
@@ -30,11 +34,11 @@ So we need some guarantees on how updates to a distributed state are propagated 
 
 The need for consistency coupled with the need for performance and availability have led to sort of compromise. The compromise is that, you know, we provide consistency, but we decide what type of consistency model to support. A number of consistency models exist. I should note that when we say that a system supports some consistency model, we mean that the system makes a guarantee about the ordering of the updates in the system and how these will be visible to ongoing read operations. It's like a contract with the system.
 
-We've mentioned some of these models so far. We talked about strong consistency model which provides linearizability, and it guarantees that the real ordering of the events, or the updates of the system, will be visible to all. We also mentioned sequential consistency, which guarantees that a single ordering of all of the writes in the system will be seen by all of the participants, but the disordering is not necessarily going to be one that matches the real one.
+We've mentioned some of these models so far. We talked about strong consistency model which provides linearizability, and it guarantees that the real ordering of the events, or the updates of the system, will be visible to all. We also mentioned sequential consistency, which guarantees that a single ordering of all of the writes in the system will be seen by all of the participants, but this ordering is not necessarily going to be one that matches the real one.
 
-Causal consistency is a model which guarantees that the ordering of the updates will be enforced only for those operations which are related with the happens before relationships. For two rights, if the second rate was performed after that note read the value that was written by the first right, then these are causally related. Otherwise, they're not. If they're not causally related, there are no guarantees about their ordering and how their ordering will be perceived by different nodes in the system.
+Causal consistency is a model which guarantees that the ordering of the updates will be enforced only for those operations which are related with the happens before relationships. For two writes, if the second write was performed after that node read the value that was written by the first write, then these are causally related. Otherwise, they're not. If they're not causally related, there are no guarantees about their ordering and how their ordering will be perceived by different nodes in the system.
 
-Another model that is commonly used in practice in distributed web services is that of eventual consistency. This model acknowledges that it is possible to have periods where the view of the data store, the view of the data in the system, is not up to date. It is not consistent. However, as long as the partitions in the system and the failures are not permanent, it guarantees that eventually all rights will become visible, but it doesn't specify anything else.
+Another model that is commonly used in practice in distributed web services is that of eventual consistency. This model acknowledges that it is possible to have periods where the view of the data store, the view of the data in the system, is not up to date. It is not consistent. However, as long as the partitions in the system and the failures are not permanent, it guarantees that eventually all writes will become visible, but it doesn't specify anything else.
 
 Other models have been defined as well. And if we look at all of them, we can sort of order them on an axis that has consistency on one end and availability on the other. In that sense, many of these models, they essentially trade some amount of consistency. They relax the consistency and the ordering guarantees they maintain in order to improve the availability of the distributed system. What we can conclude from that statement is that in general, weaker consistency models provide opportunities for greater availability.
 
@@ -44,19 +48,23 @@ There has even been some work on quantitatively analyzing the trade-off between 
 
 ## 3. Key-Value Store
 
+To make the discussion about consistency more concrete, we will talk in the context of key value stores.
+
 ![Lesson 10 slide 8: 3. Key-Value Store](slides/lesson-10/page-08.png)
 
-To make the discussion about consistency more concrete, we will talk in the context of key value stores. Key-value stores are data stores where each piece of state in the system, the data, is uniquely identified by some key, and the value associated with that key can be some arbitrary data blob of some size. This illustration here is the simplest illustration of a key value store, like a simple hash map.
+Key-value stores are data stores where each piece of state in the system, the data, is uniquely identified by some key, and the value associated with that key can be some arbitrary data blob of some size. This illustration here is the simplest illustration of a key value store, like a simple hash map.
 
-The basic operations on a key value store are put, which writes a value for the associated key, and get, which reads or returns the value associated with a key from the data store. A key value store can also support other operations, for instance, scan or arrange query, which returns all values with keys in a given range.
+The basic operations on a key value store are put, which writes a value for the associated key, and get, which reads or returns the value associated with a key from the data store. A key value store can also support other operations, for instance, scan or a range query, which returns all values with keys in a given range.
 
 Additional more powerful models may be layered above this basic key value model. Depending on whether there is additional information captured in the data store, such as timestamps, or about relationships among key value elements, such systems may also support more complex operations on the data. For instance, they can support operations involving multiple keys, transactions involving multiple keys.
 
 ## 4. Memcached
 
+One simple and popular key value store is memcached.
+
 ![Lesson 10 slide 10: 4. Memcached](slides/lesson-10/page-10.png)
 
-One simple and popular key value store is memcached. You may have heard about it or even used it, given that there is an open source version that's available, and it was officially designed and released by Facebook, and it was presented at the NSDI conference in 2013. Now, at Facebook, memcached has subsequently been largely replaced by another system taum, which was coincidentally presented in a paper just few months later at the using ATC conference in 2013. The motivation for this new system was to have something that is much better suited for the graph based operations. You can imagine that Facebook has a big social graph that's used to generate the newsfeed pages, needs to be traversed to make recommendations, etc. And so there are a lot of graph traversals that have to be performed. So this new system was, in a way, optimized for processing on such data.
+You may have heard about it or even used it, given that there is an open source version that's available, and it was officially designed and released by Facebook, and it was presented at the NSDI conference in 2013. Now, at Facebook, memcached has subsequently been largely replaced by another system TAO, which was coincidentally presented in a paper just few months later at the USENIX ATC conference in 2013. The motivation for this new system was to have something that is much better suited for the graph based operations. You can imagine that Facebook has a big social graph that's used to generate the newsfeed pages, needs to be traversed to make recommendations, etc. And so there are a lot of graph traversals that have to be performed. So this new system was, in a way, optimized for processing on such data.
 
 However, the memcached NSDI paper is still very interesting for us to talk about, because it describes how this key value store memcached is used in several different deployment contexts, from within a cluster to across geographically distributed data centers. And then it describes a number of different mechanisms that are used to provide consistency. And each of these mechanisms essentially realizes some trade-offs that are acceptable in the appropriate deployment context.
 
@@ -68,11 +76,13 @@ When we talk about clients here, this could be external clients. However, this c
 
 ## 5. Look-Aside Cache Design
 
+The design of memcached as a cache for the stored data follows what's called a look aside cache design.
+
 ![Lesson 10 slide 13: 5. Look-Aside Cache Design](slides/lesson-10/page-13.png)
 
-The design of memcached as a cache for the stored data follows what's called a look aside cache design. Let's explain how this works.
+Let's explain how this works.
 
-So in a single cluster, many of the large-scale internet applications are very read-heavy, and the reads are served over very large data sets. Likely however, the reads are not very uniformly distributed, and there are some items that are more popular, and we call this hotter items. It's also quite common for items to have temporal locality, and more recently added pieces of the state tend to be hotter than older ones. All of these aspects make the workload a good candidate to benefit from a smaller cache that's kept in memory. This way, these hot or recent items can be accessed from cache, as opposed to accessing a much slower storage sphere on some persistent devices, on hard disks and for instance.
+So in a single cluster, many of the large-scale internet applications are very read-heavy, and the reads are served over very large data sets. Likely however, the reads are not very uniformly distributed, and there are some items that are more popular, and we call this hotter items. It's also quite common for items to have temporal locality, and more recently added pieces of the state tend to be hotter than older ones. All of these aspects make the workload a good candidate to benefit from a smaller cache that's kept in memory. This way, these hot or recent items can be accessed from cache, as opposed to accessing a much slower storage tier on some persistent devices, on hard disks and for instance.
 
 Now, not all the data fits in memory, and also, data needs to be persistent, so ultimately, all data does need to be stored in some persistent storage. And at the time of this work, this was stored in SQL databases on hard disks.
 
@@ -102,15 +112,17 @@ And another thing that I want to highlight and reiterate is that when the cache 
 
 ## 6. Mechanisms in Memcached
 
+Let's look into the mechanisms used in memcached.
+
 ![Lesson 10 slide 17: 6. Mechanisms in Memcached](slides/lesson-10/page-17.png)
 
-Let's look into the mechanisms used in memcached. Consider this scenario: two web servers try to access the value of an entry in the database. Let's say the initial value of this element is a, and the element is not present initially in the memcache. Each of the servers first a reading from the cache and gets a miss, and at that point tries reading from the database. Let's say the request from web server one is the first one that arrives, and the database responds with the value of a. The web server memcache client will then initiate a set message to set this value in the cache for future requests.
+Consider this scenario: two web servers try to access the value of an entry in the database. Let's say the initial value of this element is $a$, and the element is not present initially in the memcache. Each of the servers first a reading from the cache and gets a miss, and at that point tries reading from the database. Let's say the request from web server one is the first one that arrives, and the database responds with the value of $a$. The web server memcache client will then initiate a set message to set this value in the cache for future requests.
 
-In the meantime, the value of the database entry changes. Let's say some other process that's not shown here is going to update the value of a, and this is going to become b. Now, immediately after this happens, there is a read request from web server 2. It also has a cache miss, and it reaches the database. It receives this new value b, so it will now try to set the value in the cache to the value b which it read.
+In the meantime, the value of the database entry changes. Let's say some other process that's not shown here is going to update the value of $a$, and this is going to become $b$. Now, immediately after this happens, there is a read request from web server 2. It also has a cache miss, and it reaches the database. It receives this new value $b$, so it will now try to set the value in the cache to the value $b$ which it read.
 
-Since these two set messages are traveling over a network, it is possible that they will be reordered, and that the set message from web server 2 arrives before the set message from web server 1. So if we take a look at the mem cache, its value will first become b, and then it will become a. This will leave the cache in incorrect state.
+Since these two set messages are traveling over a network, it is possible that they will be reordered, and that the set message from web server 2 arrives before the set message from web server 1. So if we take a look at the mem cache, its value will first become $b$, and then it will become $a$. This will leave the cache in incorrect state.
 
-The solution that Memcache uses to prevent this is to use a mechanism called leases. Leases are something you may remember from say, the quota paper in 6210, and this is when the system provides some guarantees, but within some time bounce. In this case, the lease is a token issued by the cash and a miss, and it provides some greater control over how it serves the read operations. For instance, it can detect concurrent rate, so in that sense, it can be used in order to enforce some order rank on the rights. The paper describes in more detail other scenarios and other potential problems that can occur in memcache, which can also be managed with the lease mechanism.
+The solution that Memcache uses to prevent this is to use a mechanism called leases. Leases are something you may remember from say, the quota paper in 6210, and this is when the system provides some guarantees, but within some time bounce. In this case, the lease is a token issued by the cache on a miss, and it provides some greater control over how it serves the read operations. For instance, it can detect concurrent rate, so in that sense, it can be used in order to enforce some ordering on the writes. The paper describes in more detail other scenarios and other potential problems that can occur in memcache, which can also be managed with the lease mechanism.
 
 For instance, for the so-called thundering herd problem, by controlling how many leases are issued at a given point of time, memcache can control the number of accesses that will be served a token, and therefore, the number of accesses that will be allowed to proceed to the database.
 
@@ -118,17 +130,17 @@ For instance, for the so-called thundering herd problem, by controlling how many
 
 ![Lesson 10 slide 18: 6. Mechanisms in Memcached](slides/lesson-10/page-18.png)
 
-Now, a single memcache instance is going to have some finite capacity. It may be very large capacity if we have spent a lot of dollars on DRAM or on some of the new multi-terabyte persistent memory technologies, such as Intel's obtained persistent memory modules, but it is still going to be finite. So if we somehow need to be able to serve data that needs more memory capacity, we have to scale horizontally by adding more memcached instances.
+Now, a single memcache instance is going to have some finite capacity. It may be very large capacity if we have spent a lot of dollars on DRAM or on some of the new multi-terabyte persistent memory technologies, such as Intel's Optane persistent memory modules, but it is still going to be finite. So if we somehow need to be able to serve data that needs more memory capacity, we have to scale horizontally by adding more memcached instances.
 
 In order to take advantage of this additional capacity, the key value space is going to be sharded. The sharding is done so that each of these memcached instances is responsible for some subset of the key space. In the boundaries, basically from which point of the key range up until which point of the key range are maintained in each of the memcached instances, these can be adjusted. The shard boundaries can be adjusted, is what we say.
 
-Now, remember, we had as a design goal to keep memcache simple. While it is possible to have many different design points, memcache goes with a design point where the routing decision, the decision to which one of the memcache instances a request is going to be routed, stays as a responsibility with the client. There is even a so-called mc router component that encapsulates this routing functionality and state. This decision to keep memcache simple, and to offload the routing decisions onto the memcache clients, as well as the cash fill decisions and some of the other mechanisms that sit with the client, this is what ultimately helps us scale the memcache because these are certain operations that now don't have to be executed by the memcache servers themselves.
+Now, remember, we had as a design goal to keep memcache simple. While it is possible to have many different design points, memcache goes with a design point where the routing decision, the decision to which one of the memcache instances a request is going to be routed, stays as a responsibility with the client. There is even a so-called mcrouter component that encapsulates this routing functionality and state. This decision to keep memcache simple, and to offload the routing decisions onto the memcache clients, as well as the cache fill decisions and some of the other mechanisms that sit with the client, this is what ultimately helps us scale the memcache because these are certain operations that now don't have to be executed by the memcache servers themselves.
 
 ### 6.2. Multiple Clusters and Invalidations
 
 ![Lesson 10 slide 19: 6. Mechanisms in Memcached](slides/lesson-10/page-19.png)
 
-A single memcache cluster will also have some bottlenecks. From the client perspective, one limitation is how many memcache instances it can route across efficiently, for instance. From the perspective of a individual chart that holds a hot content, for instance, there may be a bottleneck on the number of requests that can be served for that cod content. Given that the content is just sharded, this means that all of those requests have to be observed from the single instance. Also, the more components there are, the more likely it is that there will be some sort of failure on one of the memcached instances. If that happens, that may have implications on the entire cluster.
+A single memcache cluster will also have some bottlenecks. From the client perspective, one limitation is how many memcache instances it can route across efficiently, for instance. From the perspective of a individual shard that holds a hot content, for instance, there may be a bottleneck on the number of requests that can be served for that hot content. Given that the content is just sharded, this means that all of those requests have to be observed from the single instance. Also, the more components there are, the more likely it is that there will be some sort of failure on one of the memcached instances. If that happens, that may have implications on the entire cluster.
 
 So instead of having one huge memcache cluster, it makes sense to organize the memcache instances into multiple separate memcache cluster. Each of these clusters will have a smaller number of memcached instances. In the aggregate, as a solution, this can scale to more requests. It can handle more requests to hot content from the cache because hot content in the scenario can be present in different memcache instances on different clusters. The scenario will also have multiple failure domains, so if a failure occurs on one of the memcache instances, it will impact only one of these clusters, but not the others.
 
@@ -140,7 +152,7 @@ Although Memcache tried to avoid this kind of solution when it had a single clus
 
 ![Lesson 10 slide 20: 6. Mechanisms in Memcached](slides/lesson-10/page-20.png)
 
-Services like Facebook distribute their data and services geographically across many sites. This means that there are multiple memcache cluster groups at very different locations. The network among these locations will have very long latency compared to what we see in a data center. So it's not realistic to expect that a single charted cluster will collect the updates from all locations, will respond to cache misses to memcached servers in each of the locations, and will drive invalidations. Instead, what's done at memcache is that it expects that at the storage layer, data will be replicated at each of these geodistributed locations.
+Services like Facebook distribute their data and services geographically across many sites. This means that there are multiple memcache cluster groups at very different locations. The network among these locations will have very long latency compared to what we see in a data center. So it's not realistic to expect that a single sharded cluster will collect the updates from all locations, will respond to cache misses to memcached servers in each of the locations, and will drive invalidations. Instead, what's done at memcache is that it expects that at the storage layer, data will be replicated at each of these geodistributed locations.
 
 Now, this other layer of replication can add some additional problems, since it creates yet more copies of the data. Memcache addresses this by specifying a protocol on the operations that need to take place when a write is performed in a scenario where we have geographically distributed data centers, and then a database that's replicated across those geographically distributed data centers this line here is the boundary among those geo-distributed data centers. One important thing to note is that we will distinguish among a master database side and the replica databases.
 
@@ -152,13 +164,15 @@ At some point, the replication logic for this geo-distributed database will will
 
 ## 7. Causal+ Consistency
 
+Let's now talk about another consistency model called Causal+, that can hopefully help with this.
+
 ![Lesson 10 slide 23: 7. Causal+ Consistency](slides/lesson-10/page-23.png)
 
-Let's now talk about another consistency model called causal plus, that can hopefully help with this. We looked at couple of examples which all led to some undesirable scenarios of how data from these large-scale geo-distributed systems ends up showing up in some out-of-order way and confusing the end users, the clients. There's several reasons why if we just use causal consistency models at the system level, it is not possible for us to eliminate these problems, and they will keep creeping up.
+We looked at couple of examples which all led to some undesirable scenarios of how data from these large-scale geo-distributed systems ends up showing up in some out-of-order way and confusing the end users, the clients. There's several reasons why if we just use causal consistency models at the system level, it is not possible for us to eliminate these problems, and they will keep creeping up.
 
 ![Lesson 10 slide 24: 7. Causal+ Consistency](slides/lesson-10/page-24.png)
 
-For instance, for causal consistency, the system observes the data accesses in order to determine causality. But when updating the friends list and the post things about the job, these access different servers, and therefore, they appear as if there are concurrent operations. So it's hard for the system to tell on its own what is it supposed to do? How is it supposed to order these operations? To address this, Wyatt Lloyd, who is now at Princeton, and his scholars, who were really co-advisors at the time, introduced a new model called causal plus, and they presented it in a paper called don't settle for eventual scalable causal consistency for wide area storage with COPS. They presented it at the SOSP conference in 2011. COPS targets a system, such as the system we described in the memcache discussion. Here in one data center, there is key-value-based object store. And here, the individual servers, they are denoted with these blue circles. Each of them hosts a portion of the key space, a shard, just like in the memcached case. The data store is geographically distributed to other locations also. So when a client interacts with this local object store, any of its updates need to be replicated to all of the other locations.
+For instance, for causal consistency, the system observes the data accesses in order to determine causality. But when updating the friends list and the post things about the job, these access different servers, and therefore, they appear as if there are concurrent operations. So it's hard for the system to tell on its own what is it supposed to do? How is it supposed to order these operations? To address this, Wyatt Lloyd, who is now at Princeton, and his scholars, who were really co-advisors at the time, introduced a new model called Causal+, and they presented it in a paper called don't settle for eventual scalable causal consistency for wide area storage with COPS. They presented it at the SOSP conference in 2011. COPS targets a system, such as the system we described in the memcache discussion. Here in one data center, there is key-value-based object store. And here, the individual servers, they are denoted with these blue circles. Each of them hosts a portion of the key space, a shard, just like in the memcached case. The data store is geographically distributed to other locations also. So when a client interacts with this local object store, any of its updates need to be replicated to all of the other locations.
 
 ### 7.1. Dependency Tracking in COPS
 
@@ -174,12 +188,14 @@ Now, later on, when the client needs to perform a put operation, it's not just g
 
 ![Lesson 10 slide 28: 7. Causal+ Consistency](slides/lesson-10/page-28.png)
 
-The local key value store is going to log this data, and it can communicate this information during replication. When an update gets replicated, the information that's going to be received by the remote nodes is going to include the information about the key that needs to be updated, along with any of the dependencies. And these dependencies are going to have information about the other keys, the other objects in the database that this update depends on, and some information about their time step, about their version. This way, the remote object store can now perform dependency checks, and it will not allow this update of KV to become visible here until the dependencies have been satisfied, until dependencies become visible.
+The local key value store is going to log this data, and it can communicate this information during replication. When an update gets replicated, the information that's going to be received by the remote nodes is going to include the information about the key that needs to be updated, along with any of the dependencies. And these dependencies are going to have information about the other keys, the other objects in the database that this update depends on, and some information about their timestamp, about their version. This way, the remote object store can now perform dependency checks, and it will not allow this update of KV to become visible here until the dependencies have been satisfied, until dependencies become visible.
 
-In this manner, this system ensures a slightly different model for consistency tracking, and this is what's called causal plus, which is the new consistency model proposed in this paper. There is follow-on work from the same group of authors that continues to refine new consistency models that allow us to essentially build more useful application experiences from the client's perspective, while also achieving better performance, including in this very large scale and widely distributed data stores.
+In this manner, this system ensures a slightly different model for consistency tracking, and this is what's called Causal+, which is the new consistency model proposed in this paper. There is follow-on work from the same group of authors that continues to refine new consistency models that allow us to essentially build more useful application experiences from the client's perspective, while also achieving better performance, including in this very large scale and widely distributed data stores.
 
 ## 8. Summary
 
+In summary, in this lesson, we talked about some practical aspects of implementing consistency.
+
 ![Lesson 10 slide 30: 8. Summary](slides/lesson-10/page-30.png)
 
-In summary, in this lesson, we talked about some practical aspects of implementing consistency. We summarized few consistency models and the trade-offs they introduced. We talked about different techniques that provide system level support for realizing a given consistency model, and we used memcache as an example of a system which was used at Facebook. And this gave us an example to illustrate how these types of techniques can be used to build a real solution. We also mentioned some other more recent ideas on new consistency models, which are useful for globally distributed services that operate at large scales.
+We summarized few consistency models and the trade-offs they introduced. We talked about different techniques that provide system level support for realizing a given consistency model, and we used memcache as an example of a system which was used at Facebook. And this gave us an example to illustrate how these types of techniques can be used to build a real solution. We also mentioned some other more recent ideas on new consistency models, which are useful for globally distributed services that operate at large scales.

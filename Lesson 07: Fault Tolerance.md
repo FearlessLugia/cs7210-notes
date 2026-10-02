@@ -4,15 +4,19 @@ Source: [Lesson 7 — Video](https://www.youtube.com/watch?v=zr2cjdxJXy4)
 
 ## 1. Introduction
 
+In this lesson, we will talk about different techniques for fault tolerance and recovery.
+
 ![Lesson 7 slide 2: 1. Introduction](slides/lesson-07/page-02.png)
 
-In this lesson, we will talk about different techniques for fault tolerance and recovery. We will present the discussion of the different techniques in the context of the failure models they assume, meaning the types of faults they can tolerate. And we will also describe and compare several basic recovery techniques.
+We will present the discussion of the different techniques in the context of the failure models they assume, meaning the types of faults they can tolerate. And we will also describe and compare several basic recovery techniques.
 
 ## 2. Some Taxonomy
 
+First, let's define some concepts.
+
 ![Lesson 7 slide 4: 2. Some Taxonomy](slides/lesson-07/page-04.png)
 
-First, let's define some concepts. We will talk about failures in recovery, but a failure first starts with a fault. A fault may be related to some faulty hardware component, circuit, or memory location, or it may be a software bug. The system may have a fault, but function correctly as long as the fault isn't activated, accessed, or executed. Once it's activated, this fault leads to some error: incorrect behavior, incorrect information being produced, or something similar. This error propagates through the system as it executes, and it ultimately causes some sort of failure.
+We will talk about failures in recovery, but a failure first starts with a fault. A fault may be related to some faulty hardware component, circuit, or memory location, or it may be a software bug. The system may have a fault, but function correctly as long as the fault isn't activated, accessed, or executed. Once it's activated, this fault leads to some error: incorrect behavior, incorrect information being produced, or something similar. This error propagates through the system as it executes, and it ultimately causes some sort of failure.
 
 ![Lesson 7 slide 5: 2. Some Taxonomy](slides/lesson-07/page-05.png)
 
@@ -22,7 +26,7 @@ Considering the faults in the system, they may be transient, meaning they manife
 
 A fault can manifest itself in a fail-stop failure. In fail stop, one or more components of the distributed system stop working. They stop responding, and this is like a crash. A fault may lead to timing failures, which means that the affected system components behave outside of some timing expectations. This can lead to problems, for instance, if the implementation of the system relies on timeouts to decide whether it needs to re-transmit a message or to trigger some reconfiguration operation, for instance.
 
-Omission faults are the ones where some actions are missing. For instance, a note can fail to send all messages as expected, or fail to receive all messages which were sent. And finally, the failures may be arbitrary. A it may continue to process and generate messages, but its behavior may be incorrect. And this may be either for malicious reasons or for just some arbitrary reasons.
+Omission faults are the ones where some actions are missing. For instance, a node can fail to send all messages as expected, or fail to receive all messages which were sent. And finally, the failures may be arbitrary. A it may continue to process and generate messages, but its behavior may be incorrect. And this may be either for malicious reasons or for just some arbitrary reasons.
 
 ### 2.1. Avoidance, Detection, and Recovery
 
@@ -40,13 +44,15 @@ Most generally, what we would like to achieve from a system is that even in the 
 
 ## 3. Rollback-Recovery Idea
 
+The basic idea of rollback recovery-based fault tolerance is as follows: in the event some failure is detected, the system rolls back to a previous state which we know is correct, and then continues from that point to re-execute the operation with default removed correctly.
+
 ![Lesson 7 slide 8: 3. Rollback-Recovery Idea](slides/lesson-07/page-08.png)
 
-The basic idea of rollback recovery-based fault tolerance is as follows: in the event some failure is detected, the system rolls back to a previous state which we know is correct, and then continues from that point to re-execute the operation with default removed correctly. By rollback here, we mean that the system will be in a state where any effects of the messages that had been exchanged from that point on are now removed. And similarly, if any of the notes are represented by their internal state, then that state has been restored to correspond to the state of the nodes at the point of time chosen during the rollback.
+By rollback here, we mean that the system will be in a state where any effects of the messages that had been exchanged from that point on are now removed. And similarly, if any of the nodes are represented by their internal state, then that state has been restored to correspond to the state of the nodes at the point of time chosen during the rollback.
 
 ![Lesson 7 slide 9: 3. Rollback-Recovery Idea](slides/lesson-07/page-09.png)
 
-So the first question here is: which previous states does the system need to roll back to? Now, recall consistent cuts. The system needs to roll back to some previous consistent, which corresponds to the state of the system, ideally before the fault that caused the failure has occurred. As a consistent cut, this state corresponds to some legal state of the system. It cannot represent a scenario where, like in the right-hand side figure, node p2 thinks that it has received message m2 from p1, while at the same time, p1 has no record of ever sending such a message.
+So the first question here is: which previous states does the system need to roll back to? Now, recall consistent cuts. The system needs to roll back to some previous consistent, which corresponds to the state of the system, ideally before the fault that caused the failure has occurred. As a consistent cut, this state corresponds to some legal state of the system. It cannot represent a scenario where, like in the right-hand side figure, node $P_2$ thinks that it has received message $m_2$ from $P_1$, while at the same time, $P_1$ has no record of ever sending such a message.
 
 Two things are worth highlighting here. First, the state that the system rolls back to may not be an actual state that the system has ever been in during its previous execution. If you recall our discussion of consistent cuts, consistent cuts correspond to system state that the system may pass through during some execution, but not necessarily a state that the system has passed through during the execution that's being analyzed.
 
@@ -68,9 +74,11 @@ In the rest of this lesson, we will talk about transparent methods which operate
 
 ## 4. Basic Mechanisms
 
+Let's talk now about the basic mechanisms.
+
 ![Lesson 7 slide 13: 4. Basic Mechanisms](slides/lesson-07/page-13.png)
 
-Let's talk now about the basic mechanisms. A checkpoint corresponds to saving the state of the process or of the entire node to some persistent storage. When a checkpoint is performed, the state of the system or the application process should be captured from memory registers etc, and written out to disk or some other persistent media. If there is a failure, the checkpoint can be used to rebuild the state of the system at the corresponding point in the execution, and then to restart. In fact, the restart can be instantaneous as soon as the state is reloaded in memory and registers. Of course, if there is a hardware failure, the assumption here is that either this node would be restarted, repaired and restarted rather, or that another node would start, and that this other node has access to the same persistent media so as to access that checkpointed state.
+A checkpoint corresponds to saving the state of the process or of the entire node to some persistent storage. When a checkpoint is performed, the state of the system or the application process should be captured from memory registers etc, and written out to disk or some other persistent media. If there is a failure, the checkpoint can be used to rebuild the state of the system at the corresponding point in the execution, and then to restart. In fact, the restart can be instantaneous as soon as the state is reloaded in memory and registers. Of course, if there is a hardware failure, the assumption here is that either this node would be restarted, repaired and restarted rather, or that another node would start, and that this other node has access to the same persistent media so as to access that checkpointed state.
 
 The downside is that there is potentially a lot of IO that needs to be performed during each checkpoint in order to save the full system state. This is why application specific approaches are used in some context such as HPC, so as to include in the checkpoint only the state that's really necessary for recovery. Another way to reduce the amount of checkpoint IO is to keep track of the deltas across checkpoint intervals, and then to write out only the changed portions of the state.
 
@@ -78,11 +86,11 @@ The downside is that there is potentially a lot of IO that needs to be performed
 
 ![Lesson 7 slide 14: 4. Basic Mechanisms](slides/lesson-07/page-14.png)
 
-An opposite approach from taking checkpoints of the entire system state is to just log information about the operations that have been performed that resulted in state changes. At a most basic level, this information should be just about the changes of the variables or memory locations from, say, x to x prime. More generally, the log can include information for some other higher level operations.
+An opposite approach from taking checkpoints of the entire system state is to just log information about the operations that have been performed that resulted in state changes. At a most basic level, this information should be just about the changes of the variables or memory locations from, say, $x$ to $x'$. More generally, the log can include information for some other higher level operations.
 
 The information in the log may include the original values of the affected variable or variables. We call this the undo log, since we can use this information if we need to undo the changes during rollback. Or the information can include the new values, in which case, to rollback means to go back to the original application state at the beginning, and then the log is used during recovery to replay the changes, to redo the changes.
 
-Clearly, now the log has to be persisted and made durable, needs to be written out somewhere so it can be recovered in case the note fails. The benefit of this is that the log will be typically much smaller than the total system or application state, and therefore the amount of IO that needs to be performed during checkpoint is far less. Since this IO time is time that is taken in the application critical path, the application kind of has to write out this information while it's executing, it is important to keep this time to the minimum.
+Clearly, now the log has to be persisted and made durable, needs to be written out somewhere so it can be recovered in case the node fails. The benefit of this is that the log will be typically much smaller than the total system or application state, and therefore the amount of IO that needs to be performed during checkpoint is far less. Since this IO time is time that is taken in the application critical path, the application kind of has to write out this information while it's executing, it is important to keep this time to the minimum.
 
 The downside is that now recovery takes longer. We need to look at this log, find out what are the updates that we need to undo or redo, replay the log, and so forth. In addition, with redo log in particular, even regular application operations become more expensive, because now they have to look through the log to find out the most recent value of any dependent parameters and input parameters they need for execution.
 
@@ -94,9 +102,11 @@ This speeds up recovery, and also it's no longer necessary to keep very long log
 
 ## 5. Checkpointing Approaches
 
+What are some different approaches to checkpointing?
+
 ![Lesson 7 slide 17: 5. Checkpointing Approaches](slides/lesson-07/page-17.png)
 
-What are some different approaches to checkpointing? The explanation so far ignored one important question. In order to explain how the consistent cut can be determined, we need to first explain that there can be several ways to decide when a process takes a checkpoint: uncoordinated, coordinated, or communication induced. We will explain a few methods for rollback recovery based on these approaches, but first, let's briefly summarize the system model.
+The explanation so far ignored one important question. In order to explain how the consistent cut can be determined, we need to first explain that there can be several ways to decide when a process takes a checkpoint: uncoordinated, coordinated, or communication induced. We will explain a few methods for rollback recovery based on these approaches, but first, let's briefly summarize the system model.
 
 ![Lesson 7 slide 18: 5. Checkpointing Approaches](slides/lesson-07/page-18.png)
 
@@ -104,11 +114,13 @@ We will consider a model with a fixed number of processors. Communication among 
 
 ## 6. Uncoordinated Checkpointing
 
+The first approach is the uncoordinated approach.
+
 ![Lesson 7 slide 20: 6. Uncoordinated Checkpointing](slides/lesson-07/page-20.png)
 
-The first approach is the uncoordinated approach. In this approach, processes take checkpoints independently. If there is a failure, it is important to recover the system in a consistent state. And for this execution here, it means p2, the note which has failed, will have to roll back to some consistent state. The nearest checkpoint is c. If it rolls back to the checkpoint seam, that means that the message m6, which is sent from p2 to p1 after the checkpoint, is lost. So we have to remove any of its effects from the system. That means that on p1, we now have to roll back to checkpoint b.
+In this approach, processes take checkpoints independently. If there is a failure, it is important to recover the system in a consistent state. And for this execution here, it means $P_2$, the node which has failed, will have to roll back to some consistent state. The nearest checkpoint is $C$. If it rolls back to the checkpoint $C$, that means that the message $m_6$, which is sent from $P_2$ to $P_1$ after the checkpoint, is lost. So we have to remove any of its effects from the system. That means that on $P_1$, we now have to roll back to checkpoint $B$.
 
-Fortunately, there are no other effects that need to be rolled back. P1 has not sent anything after b, so we don't have to eliminate the effects of any messages that may have been sent after the checkpoint b. And if we take a look at the most recent checkpoint in p0, that's checkpoint a, there are no messages that it has sent that need to be undone. All of the messages that were sent prior to any of the per node checkpoints a b and c, are reflected as received in the corresponding checkpoints. So in this scenario, the recovery line will correspond to these states a b and c.
+Fortunately, there are no other effects that need to be rolled back. $P_1$ has not sent anything after $B$, so we don't have to eliminate the effects of any messages that may have been sent after the checkpoint $B$. And if we take a look at the most recent checkpoint in $P_0$, that's checkpoint $A$, there are no messages that it has sent that need to be undone. All of the messages that were sent prior to any of the per node checkpoints $A$, $B$, and $C$, are reflected as received in the corresponding checkpoints. So in this scenario, the recovery line will correspond to these states $A$, $B$, and $C$.
 
 Clearly, in order to be able to do this, the solution will have to rely on maintaining some information about the dependencies that exist, about the messages that have been sent and received in the system.
 
@@ -116,7 +128,7 @@ Clearly, in order to be able to do this, the solution will have to rely on maint
 
 ![Lesson 7 slide 21: 6. Uncoordinated Checkpointing](slides/lesson-07/page-21.png)
 
-Uncoordinated checkpoints suffers from a very serious downside, and that's what's called domino effect. Consider this slightly modified execution. And now, suppose process p2 fails and rolls back to checkpoint c. Now, the rollback invalidates the sending of the message m6, and so p1 must now roll back to checkpoint b. Now, when we roll back p1 to checkpoint beam, we eliminate the effects of message m6. However, we now have to also eliminate the effects of message m7. Now, we need to roll back process p0 to checkpoint a. We see that process 0 has sent message m5 after the checkpoint, so we have to eliminate any effects in the system that correspond to the receipt of message m5. So we look now at process p2. Checkpoint c is not adequate. We have to roll back to the previous checkpoint. Well, now we have to eliminate any messages that p2 has sent after that previous checkpoint exist in the system. In this case, that's message m4. Clearly, have to roll back p1 to a checkpoint before the checkpoint beam.
+Uncoordinated checkpoints suffers from a very serious downside, and that's what's called domino effect. Consider this slightly modified execution. And now, suppose process $P_2$ fails and rolls back to checkpoint $C$. Now, the rollback invalidates the sending of the message $m_6$, and so $P_1$ must now roll back to checkpoint $B$. Now, when we roll back $P_1$ to checkpoint $B$, we eliminate the effects of message $m_6$. However, we now have to also eliminate the effects of message $m_7$. Now, we need to roll back process $P_0$ to checkpoint $A$. We see that process 0 has sent message $m_5$ after the checkpoint, so we have to eliminate any effects in the system that correspond to the receipt of message $m_5$. So we look now at process $P_2$. checkpoint $C$ is not adequate. We have to roll back to the previous checkpoint. Well, now we have to eliminate any messages that $P_2$ has sent after that previous checkpoint exist in the system. In this case, that's message $m_4$. Clearly, have to roll back $P_1$ to a checkpoint before the checkpoint $B$.
 
 And so you can see how this will have to continue, and one by one, the rollback will go back to find as a recovery line, a point in the execution that corresponds really to the very initial state of the system. All of the work that has been done by any of the processes in the system will be completely wasted.
 
@@ -130,9 +142,11 @@ In order to deal with these potentially excessive storage requirements, we'll ha
 
 ## 7. Coordinated Checkpointing
 
+Another approach is to do what's called coordinated checkpoint.
+
 ![Lesson 7 slide 24: 7. Coordinated Checkpointing](slides/lesson-07/page-24.png)
 
-Another approach is to do what's called coordinated checkpoint. In a coordinated checkpoint, the processes coordinate when they take a checkpoint so as to ensure that the checkpoints they take are part of a consistent state. For instance, here, p0 initiates a checkpoint and coordinates with the two other processes to make sure that they take their appropriate checkpoint. In such a scenario, a recovery no longer requires maintaining a dependency graph to calculate a recovery line. The latest checkpoint that each of the processes can simply be used.
+In a coordinated checkpoint, the processes coordinate when they take a checkpoint so as to ensure that the checkpoints they take are part of a consistent state. For instance, here, $P_0$ initiates a checkpoint and coordinates with the two other processes to make sure that they take their appropriate checkpoint. In such a scenario, a recovery no longer requires maintaining a dependency graph to calculate a recovery line. The latest checkpoint that each of the processes can simply be used.
 
 ![Lesson 7 slide 25: 7. Coordinated Checkpointing](slides/lesson-07/page-25.png)
 
@@ -144,35 +158,39 @@ The benefit of this is that in coordinated checkpoint, then there is no danger o
 
 But there are challenges with coordinated checkpoint, and the biggest one is how to ensure this coordination among processes that they need to perform in order to agree when to take the checkpoint.
 
-For instance, the initiator message to p2 may have been delayed and to receive after it has received this message mi. In this case, if we take a look at the state that's described with the cut abc, we see that this state corresponds to a situation where the system knows that a message has been received on p2, this is message mi, but it does not know that that message has been sent, because in process p1, the checkpoint b corresponds to state before the message mi has been sent. So then clearly, this checkpoint abc does not correspond to a consistent cut in the system, and we have to prevent this situation.
+For instance, the initiator message to $P_2$ may have been delayed and to receive after it has received this message $m_i$. In this case, if we take a look at the state that's described with the cut $ABC$, we see that this state corresponds to a situation where the system knows that a message has been received on $P_2$, this is message $m_i$, but it does not know that that message has been sent, because in process $P_1$, the checkpoint $B$ corresponds to state before the message $m_i$ has been sent. So then clearly, this checkpoint $ABC$ does not correspond to a consistent cut in the system, and we have to prevent this situation.
 
-If we had a guarantee of synchronous clocks, it would be possible to do this. We can just have the nodes agreed that they will take a snapshot after every t units of time. However, time is not guaranteed to be uniform across all nodes, and there is no guarantee that there isn't a drift among the cloaks. So this presents a problem. If we had reliable and bounded message delivery, then there are ways to come up with a coordination strategy, but in general, this is not the case.
+If we had a guarantee of synchronous clocks, it would be possible to do this. We can just have the nodes agreed that they will take a snapshot after every t units of time. However, time is not guaranteed to be uniform across all nodes, and there is no guarantee that there isn't a drift among the clocks. So this presents a problem. If we had reliable and bounded message delivery, then there are ways to come up with a coordination strategy, but in general, this is not the case.
 
-Also, by having the initiator send a message that says take a checkpoint now to all the notes in the system, this type of coordination may lead to many processes having to create a checkpoint even when there are no relevant changes in their state. So the problem of having the system take unnecessary checkpoints is not completely eliminated in this scenario.
+Also, by having the initiator send a message that says take a checkpoint now to all the nodes in the system, this type of coordination may lead to many processes having to create a checkpoint even when there are no relevant changes in their state. So the problem of having the system take unnecessary checkpoints is not completely eliminated in this scenario.
 
 ## 8. Communication-Induced Checkpoints
 
+To deal with this, we rely on so-called communication-induced checkpoints.
+
 ![Lesson 7 slide 28: 8. Communication-Induced Checkpoints](slides/lesson-07/page-28.png)
 
-To deal with this, we rely on so-called communication-induced checkpoints. One way to ensure the nodes properly coordinate is to use a coordination protocol such as two-phase commit, or even any other consensus protocol. Here, the consensus the nodes are trying to reach is that they are taking a snapshot at that particular point of time. The key here is that from the moment the coordination is initiated until it completes, no other messages should be processed. And in that sense, this approach is blocking.
+One way to ensure the nodes properly coordinate is to use a coordination protocol such as two-phase commit, or even any other consensus protocol. Here, the consensus the nodes are trying to reach is that they are taking a snapshot at that particular point of time. The key here is that from the moment the coordination is initiated until it completes, no other messages should be processed. And in that sense, this approach is blocking.
 
 ![Lesson 7 slide 29: 8. Communication-Induced Checkpoints](slides/lesson-07/page-29.png)
 
 Instead, we already looked at a non-blocking alternative that would be a good match for capturing a consistent. That was the global snapshot algorithm. You recall that the global snapshot algorithm relied on the special marker messages. This worked, but imposed this requirement that the network had to be FIFO. To remove the question of how the marker is ordered with respect to any of the application level messages, one way to do this is you can simply piggyback the marker message in a message.
 
-Also, to make sure that we have recent checkpoints of nodes that may not be presently communicating with anyone, periodic independent checkpoints are encouraged. In between such independent checkpoints, each note monitors the incoming messages, and if they contain a marker, then a checkpoint is performed. And in fact, the snapshot of the process date is captured just before processing the message that carried the piggybacked information about taking a checkpoint. By doing that, this scenario where we had a problem in the earlier example can be solved. The checkpoint of p1 is taken before the message is sent. The checkpoint c of p2 is also taken before the message is formally received by the process. And if there is a failure in the system, the two checkpoints will represent a consistent cut, and will form a valid recovery line.
+Also, to make sure that we have recent checkpoints of nodes that may not be presently communicating with anyone, periodic independent checkpoints are encouraged. In between such independent checkpoints, each node monitors the incoming messages, and if they contain a marker, then a checkpoint is performed. And in fact, the snapshot of the process state is captured just before processing the message that carried the piggybacked information about taking a checkpoint. By doing that, this scenario where we had a problem in the earlier example can be solved. The checkpoint of $P_1$ is taken before the message is sent. The checkpoint $C$ of $P_2$ is also taken before the message is formally received by the process. And if there is a failure in the system, the two checkpoints will represent a consistent cut, and will form a valid recovery line.
 
 ## 9. Logging
 
+The other basic mechanism we rely upon in order to implement recovery mechanisms is logging.
+
 ![Lesson 7 slide 31: 9. Logging](slides/lesson-07/page-31.png)
 
-The other basic mechanism we rely upon in order to implement recovery mechanisms is logging. Unlike checkpoint reset, logging offers opportunity to save on the amount of ion that needs to be performed, but requires more complex recovery, because to rebuild the state of the system, the log needs to be used to first roll back and then to re-execute the execution.
+Unlike checkpoints, logging offers opportunity to save on the amount of I/O that needs to be performed, but requires more complex recovery, because to rebuild the state of the system, the log needs to be used to first roll back and then to re-execute the execution.
 
-When considering distributed systems, the logs that are created by each of the nodes in the system must be such so that they specify deterministically a valid execution of the system, and they don't lead to orphaned events. For instance, in an example that's equivalent to the inconsistent cut illustration we used earlier, we cannot have a situation where upon failure we have a note p2 information that the message has been received from p1, but the log on p2 shows no record of a message being sent.
+When considering distributed systems, the logs that are created by each of the nodes in the system must be such so that they specify deterministically a valid execution of the system, and they don't lead to orphaned events. For instance, in an example that's equivalent to the inconsistent cut illustration we used earlier, we cannot have a situation where upon failure we have a node $P_2$ information that the message has been received from $P_1$, but the log on $P_2$ shows no record of a message being sent.
 
 ![Lesson 7 slide 32: 9. Logging](slides/lesson-07/page-32.png)
 
-There are several approaches to achieve this. In pessimistic logging, the idea is that each process should log everything to persistent storage before allowing events to propagate and to get committed in the system. If pessimistic logging is used in the scenario illustrated in this illustration, it would be impossible to execute the sent message event at p1 and not to log it. Therefore, the problem would be solved.
+There are several approaches to achieve this. In pessimistic logging, the idea is that each process should log everything to persistent storage before allowing events to propagate and to get committed in the system. If pessimistic logging is used in the scenario illustrated in this illustration, it would be impossible to execute the sent message event at $P_1$ and not to log it. Therefore, the problem would be solved.
 
 The issue with pessimistic logging is that it incurs very high overhead. Writing to persistent storage is slow. It introduces a slowdown, and the slowdown is in the critical path of executing operations and finalizing and committing them. There are ways to improve this. Newly available persistent memories offer a way to write to persistent storage much much faster, and they can certainly help. And there are many examples out there where persistent memories are used precisely for maintaining logs that are later used for building fault tolerance solutions.
 
@@ -184,15 +202,17 @@ Now, we recognize that it may be hard to generally claim that this assumption th
 
 For any operations that lead to some externally visible events that cannot simply be undone, the output of such operations has to be delayed until the system is sure that the operation has, information about the operation has been persisted, and that these operations will not need to be imported.
 
-In principle, what we need is some causality tracking mechanism. And approaches that are based on causality tracking can operate optimistically whenever there are no dependence related problems, but guarantee the similar properties of not having orphaned events, which is possible to guarantee with pessimistic law.
+In principle, what we need is some causality tracking mechanism. And approaches that are based on causality tracking can operate optimistically whenever there are no dependence related problems, but guarantee the similar properties of not having orphaned events, which is possible to guarantee with pessimistic logging.
 
-There is still an issue here that any externally visible output would need to be delayed, potentially unknown amount of time, particularly when the system operates with slow and unreliable networks. The reason for this is that causality tracking relies on exchange of some messages, and so we have to ultimately guarantee that there aren't going to be any messages carrying causality related information that are still in place.
+There is still an issue here that any externally visible output would need to be delayed, potentially unknown amount of time, particularly when the system operates with slow and unreliable networks. The reason for this is that causality tracking relies on exchange of some messages, and so we have to ultimately guarantee that there aren't going to be any messages carrying causality related information that are still in flight.
 
 ## 10. Which Method to Use?
 
+To summarize, there are a number of options that one can consider when implementing fault tolerance solutions for distributed systems that rely on rollback recovery.
+
 ![Lesson 7 slide 34: 10. Which Method to Use?](slides/lesson-07/page-34.png)
 
-To summarize, there are a number of options that one can consider when implementing fault tolerance solutions for distributed systems that rely on rollback recovery. At a basic level, these solutions incorporate checkpointing and logging mechanism. But even in the context of checkpoint and logging, a number of variations exist.
+At a basic level, these solutions incorporate checkpointing and logging mechanism. But even in the context of checkpoint and logging, a number of variations exist.
 
 The right choice would depend on a number of factors. These can be related to the workload: how often is the data updated? How big are the updates? How many nodes are involved in a single application level transaction? Is achieving fast recovery important? When thinking about this, clearly, we have to think also about the failure characteristics: what kinds of failures are occurring in the system, and what are their probabilities? Then we have to think about the characteristics of the system as well, particularly with respect to the cost and overhead of communication versus storage.
 
@@ -206,6 +226,8 @@ Coordinated checkpointing, which has been the default strategy in HPC systems, i
 
 ## 11. Summary
 
+And now, to summarize the lesson, in this lesson, we discuss the problems related to dealing with failures in distributed systems, and we said that for distributed computations to be able to recover from failures, it is necessary for them to maintain information about their state and any changes that have been performed on that state in a consistent manner.
+
 ![Lesson 7 slide 37: 11. Summary](slides/lesson-07/page-37.png)
 
-And now, to summarize the lesson, in this lesson, we discuss the problems related to dealing with failures in distributed systems, and we said that for distributed computations to be able to recover from failures, it is necessary for them to maintain information about their state and any changes that have been performed on that state in a consistent manner. We said that there are two basic mechanisms that underpin general rollback recovery techniques: checkpointing and logging. We briefly described several design approaches to implementing a checkpoint or a logging based recovery system. Note that we use the terms operations and update interchangeably to refer to some unit of work in the system. In principle, this can correspond to an individual update to a variable, or it can correspond to an entire distributed transaction.
+We said that there are two basic mechanisms that underpin general rollback recovery techniques: checkpointing and logging. We briefly described several design approaches to implementing a checkpoint or a logging based recovery system. Note that we use the terms operations and update interchangeably to refer to some unit of work in the system. In principle, this can correspond to an individual update to a variable, or it can correspond to an entire distributed transaction.

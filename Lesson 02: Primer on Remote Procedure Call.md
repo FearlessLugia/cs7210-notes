@@ -4,9 +4,11 @@ Source: [Lesson 2 — Video](https://www.youtube.com/watch?v=q-XBIen19Pw)
 
 ## 1. Introduction
 
+The topic of RPC is covered in other courses in the program, in introduction to operating systems and advanced operating systems.
+
 ![Lesson 2 slide 2: 1. Introduction](slides/lesson-02/page-02.png)
 
-The topic of RPC is covered in other courses in the program, in introduction to operating systems and advanced operating systems. So you can consider this lesson as a primer for those of you who have not taken those courses previously.
+So you can consider this lesson as a primer for those of you who have not taken those courses previously.
 
 In this lesson, we will briefly review the basic elements and mechanisms of client server architectures. We will spend most of the time on remote procedure calls, RPC, and we will describe the idea and the functionality enabled by RPC systems and the underlying mechanisms.
 
@@ -78,7 +80,7 @@ Then an RPC system must provide support for dealing with failures. Maybe these a
 
 ![Lesson 2 slide 12: 5. Architecture of an RPC System](slides/lesson-02/page-12.png)
 
-Let's discuss the architecture of an RPC system. The architecture of an RPC system contains several components. At the topmost level is the programming interface that client and server applications use to interact with the system. When clients make a request, they make a call to something that looks similar to a procedure. However, instead of having the program counter jump to a location in the address space that holds the implementation of the actual procedure, the RPC call results in a jump into the stub layer. This layer has knowledge about the remote procedure, its arguments and results, and will perform all steps required for marshaling and our marshaling of the data and parameters.
+Let's discuss the architecture of an RPC system. The architecture of an RPC system contains several components. At the topmost level is the programming interface that client and server applications use to interact with the system. When clients make a request, they make a call to something that looks similar to a procedure. However, instead of having the program counter jump to a location in the address space that holds the implementation of the actual procedure, the RPC call results in a jump into the stub layer. This layer has knowledge about the remote procedure, its arguments and results, and will perform all steps required for marshalling and unmarshalling of the data and parameters.
 
 At the lowest level is the RPC runtime, responsible for tasks such as connection management, sending and receiving data, dealing with failures, etc.
 
@@ -94,7 +96,7 @@ Finally, an RPC system typically establishes some rules for how servers would an
 
 ![Lesson 2 slide 13: 5. Architecture of an RPC System](slides/lesson-02/page-13.png)
 
-The way the RPC system is used then is as follows: the server developer implements a procedure, let's say add, and provides a specification written in the IDL. The specification is compiled with the RPC compiler. The compiler generates the code for the stubs and even the skeleton of the entire server code. The server process is created by adding the implementation of the ad service to the skeleton and then is registered with the registry.
+The way the RPC system is used then is as follows: the server developer implements a procedure, let's say add, and provides a specification written in the IDL. The specification is compiled with the RPC compiler. The compiler generates the code for the stubs and even the skeleton of the entire server code. The server process is created by adding the implementation of the add service to the skeleton and then is registered with the registry.
 
 The client developer writes the client application referring to remote operations such as add, using an appropriate interface, and then just compiles the code together with the automatically generated object files produced from the RPC compiler. At runtime, the RPC runtime takes care of everything else.
 
@@ -110,15 +112,15 @@ Consider a client and a server. The client wants to perform arithmetic operation
 
 ![Lesson 2 slide 16: 6. Anatomy of an RPC Call](slides/lesson-02/page-16.png)
 
-Let's consider in this example that the client wants to perform an addition, to add inj and obtain the results of this in a variable k. The client doesn't have the implementation of add. Only the server knows how to do the addition. However, with RPC, the client is still allowed to call something that looks just like a regular procedure. They would call k equal add of i and j.
+Let's consider in this example that the client wants to perform an addition, to add `i` and `j` and obtain the results of this in a variable `k`. The client doesn't have the implementation of add. Only the server knows how to do the addition. However, with RPC, the client is still allowed to call something that looks just like a regular procedure. They would call `k = add(i, j)`.
 
 ### 6.2. The Client Stub
 
 ![Lesson 2 slide 17: 6. Anatomy of an RPC Call](slides/lesson-02/page-17.png)
 
-In a regular program, when a procedure call is made, the execution will jump to a point in the address space which has the implementation of that procedure, meaning that the program counter will be set to some value that corresponds to the first instruction in the procedure. In this example, when this RPC ad is called, the execution of the program will also jump to another location, but this won't be the real implementation of add. Instead, this will be a step implementation. From the rest of the client's processes perspective, it will look as if that's a real ad, but internally, it will do something entirely different.
+In a regular program, when a procedure call is made, the execution will jump to a point in the address space which has the implementation of that procedure, meaning that the program counter will be set to some value that corresponds to the first instruction in the procedure. In this example, when this RPC add is called, the execution of the program will also jump to another location, but this won't be the real implementation of add. Instead, this will be a stub implementation. From the rest of the client's processes perspective, it will look as if that's a real add, but internally, it will do something entirely different.
 
-The responsibility of the client step is to create a buffer, populate that buffer with appropriate information. In this case, that's a descriptor of the function that the client wants the server to execute at, as well as of its arguments, the integers i and j. Here the step is code that is automatically generated via the tools that are part of the RPC package. The programmer doesn't write this code. So when the client makes this add call here, the call takes the execution of the client process into the RPC runtime. That's the system software that implements all of the RPC functionality. And the first step here is the stop implementation.
+The responsibility of the client stub is to create a buffer, populate that buffer with appropriate information. In this case, that's a descriptor of the function that the client wants the server to execute, add, as well as of its arguments, the integers `i` and `j`. Here the stub is code that is automatically generated via the tools that are part of the RPC package. The programmer doesn't write this code. So when the client makes this add call here, the call takes the execution of the client process into the RPC runtime. That's the system software that implements all of the RPC functionality. And the first step here is the stub implementation.
 
 ### 6.3. Sending and Receiving the Request
 
@@ -130,7 +132,7 @@ After the buffer is created, the RPC runtime will send the message to the server
 
 ![Lesson 2 slide 20: 6. Anatomy of an RPC Call](slides/lesson-02/page-20.png)
 
-On the server side, when the packets are received on this connection, they will be handed off to the server stack. The server step is again a portion of the RPC runtime. This is code that will know how to parse and interpret the received bytes, aim to determine that this is an RPC request from a client for the procedure at and with arguments i and j. The server side code will also understand that i and j are integers, so it will know how to extract the correct number of bytes from the byte stream that arrived in the packet, and it will know how to allocate variables that are of the integer data type that will be initialized to the values of i and j.
+On the server side, when the packets are received on this connection, they will be handed off to the server stub. The server stub is again a portion of the RPC runtime. This is code that will know how to parse and interpret the received bytes, and to determine that this is an RPC request from a client for the procedure add and with arguments `i` and `j`. The server side code will also understand that `i` and `j` are integers, so it will know how to extract the correct number of bytes from the byte stream that arrived in the packet, and it will know how to allocate variables that are of the integer data type that will be initialized to the values of `i` and `j`.
 
 ### 6.4. Executing the Procedure and Returning the Result
 
@@ -140,7 +142,7 @@ Once all this information is extracted on the server side, the stub will call in
 
 ![Lesson 2 slide 22: 6. Anatomy of an RPC Call](slides/lesson-02/page-22.png)
 
-Once the result of the ad is computed, it takes a reverse path through the server-side stop that will first create a buffer for the result, then send the respond back via the appropriate client connection, then into the client site RPC runtime, where the packets will be received, the result will be extracted from the packets and placed in memory, and ultimately, the procedure will return to the user level client process.
+Once the result of the add is computed, it takes a reverse path through the server-side stub that will first create a buffer for the result, then send the response back via the appropriate client connection, then into the client-side RPC runtime, where the packets will be received, the result will be extracted from the packets and placed in memory, and ultimately, the procedure will return to the user level client process.
 
 ## 7. Invocation Semantics of RPC Operations 1
 
@@ -176,7 +178,7 @@ In a distributed system, there are no guarantees that the server will respond. H
 
 Ideally, we would like the RPC system to guarantee the same type of exactly-once call semantics as what we have with local procedures. That means at least that the RPC runtime would perform automatically some form of retransmission when there is no response. In addition, there must be some mechanism for the server to distinguish repeated requests for the same RPC operation, so it does not keep redoing it over and over again.
 
-In some cases, such as when adding a plus b and both arguments are specified in the RPC call, it's okay to redo the operation. We will still get the same result. In other cases, repeatedly executing the call is a very bad idea. For instance, if the RPC call is used to decrement a counter, maybe someone's account balance, or to similarly update some state in some incremental way. In those scenarios, we have to make sure we can detect and eliminate duplicates.
+In some cases, such as when adding $a+b$ and both arguments are specified in the RPC call, it's okay to redo the operation. We will still get the same result. In other cases, repeatedly executing the call is a very bad idea. For instance, if the RPC call is used to decrement a counter, maybe someone's account balance, or to similarly update some state in some incremental way. In those scenarios, we have to make sure we can detect and eliminate duplicates.
 
 However, if there is a more permanent issue with the server, or with the connection to the server, the RPC runtime really has no way of guaranteeing that this exactly-once semantics can be met. For such scenarios, we will need to do something different.
 
@@ -196,11 +198,13 @@ There are other possible types of semantics that an RPC system may choose to gua
 
 ## 9. Examples of RPC Systems
 
+Many RPC systems have been developed over the years.
+
 ![Lesson 2 slide 31: 9. Examples of RPC Systems](slides/lesson-02/page-31.png)
 
-Many RPC systems have been developed over the years. Let's discuss some examples. We mentioned Sun RPC. This was the original RPC system design and implementation from the early 1980s and was done by Sun Microsystems.
+Let's discuss some examples. We mentioned Sun RPC. This was the original RPC system design and implementation from the early 1980s and was done by Sun Microsystems.
 
-Older systems and protocols that have been broadly used in enterprise solutions include SOAP and Cobra. More recent systems built with different internet services in mind include Apache Drift and gRPC. And there are many RPC systems specialized for certain contexts. For instance, for high-end data center systems with ultra high bandwidth, low latency, and very reliable networks, or for embedded environments where there is a lot of optimizations that are necessary in order to minimize the resource footprint.
+Older systems and protocols that have been broadly used in enterprise solutions include SOAP and CORBA. More recent systems built with different internet services in mind include Apache Thrift and gRPC. And there are many RPC systems specialized for certain contexts. For instance, for high-end data center systems with ultra high bandwidth, low latency, and very reliable networks, or for embedded environments where there is a lot of optimizations that are necessary in order to minimize the resource footprint.
 
 ## 10. Examples of RPC Systems: gRPC
 
@@ -208,21 +212,21 @@ Older systems and protocols that have been broadly used in enterprise solutions 
 
 ![Lesson 2 slide 33: 10. Examples of RPC Systems: gRPC](slides/lesson-02/page-33.png)
 
-A popular RPC system used today is gRPC. GRPC is an RPC implementation released by Google around 2016, and it's inspired by the original Sun RPC system. It relies on Protocol Buffers as what provides the functionality to describe the interface and the data types and to perform the data serialization. In gRPC, the interface is specified in a dot protofile. It is then compiled with a product compiler to generate the code for the appropriate gRPC routines. And this supports a number of different languages: C plus, Java, Python. You can find the documentation in the full language specific API of gRPC at the gRPC's website gRPC.io. We will look very briefly at the hello world example from the main gRPC website. Our goal will be mainly to highlight the different components and to give you a flavor of the differences among gRPC and some other RPC systems you might have previously looked at.
+A popular RPC system used today is gRPC. GRPC is an RPC implementation released by Google around 2016, and it's inspired by the original Sun RPC system. It relies on Protocol Buffers as what provides the functionality to describe the interface and the data types and to perform the data serialization. In gRPC, the interface is specified in a `.proto` file. It is then compiled with the `protoc` compiler to generate the code for the appropriate gRPC routines. And this supports a number of different languages: C++, Java, Python. You can find the documentation in the full language specific API of gRPC at the gRPC's website gRPC.io. We will look very briefly at the hello world example from the main gRPC website. Our goal will be mainly to highlight the different components and to give you a flavor of the differences among gRPC and some other RPC systems you might have previously looked at.
 
 ### 10.2. The Greeter Service Interface
 
 ![Lesson 2 slide 34: 10. Examples of RPC Systems: gRPC](slides/lesson-02/page-34.png)
 
-Let's look first at the profile in this example, which is the specification of the service. In this example, the service called Greeter has two RPC procedures called Say Hello and Say Hello Again. Both procedures take one input message of type Hello Request and return a result of type Hello Reply. The message type for Hello Request is defined as having one required field. This field is called name and is of string type. String is one of the data types that are predefined in gRPC, but there is a way how to specify complex data types as well. Each of the elements in the input output data types is identified by its number. Hello Reply here happens to have the exactly same data type as Hello Request.
+Let's look first at the `.proto` file in this example, which is the specification of the service. In this example, the service called Greeter has two RPC procedures called `SayHello` and `SayHelloAgain`. Both procedures take one input message of type `HelloRequest` and return a result of type `HelloReply`. The message type for `HelloRequest` is defined as having one required field. This field is called name and is of string type. String is one of the data types that are predefined in gRPC, but there is a way how to specify complex data types as well. Each of the elements in the input output data types is identified by its number. `HelloReply` here happens to have the exactly same data type as `HelloRequest`.
 
 ### 10.3. Compilation and Service Implementation
 
-When this dot protocol is compiled with a C plus language option, it generates the protocol buffer serialization and deserialization routines for messages of type Hello Request or Hello Reply. This will be in files with extension.pp, and any C plus plus code or header files that are needed for the subroutines, are also going to be generated both for the client side and the server side code.
+When this `.proto` file is compiled with a C++ language option, it generates the protocol buffer serialization and deserialization routines for messages of type `HelloRequest` or `HelloReply`. This will be in files with extension.pp, and any C++ code or header files that are needed for the subroutines, are also going to be generated both for the client side and the server side code.
 
 ![Lesson 2 slide 35: 10. Examples of RPC Systems: gRPC](slides/lesson-02/page-35.png)
 
-Next, here is the example of the actual service implementation. This is what will be executed in response to each remote procedure call. The illustration shows the implementation of one of the RPC procedures, Say Hello Again here. This procedure combines a string called prefix, which has a value hello again, with the value of the field name in the input message request, which is of type Hello Request. The combined string is set to the value of the output message reply, and this is of type Hello Reply, and this completes the operation successfully.
+Next, here is the example of the actual service implementation. This is what will be executed in response to each remote procedure call. The illustration shows the implementation of one of the RPC procedures, `SayHelloAgain` here. This procedure combines a string called prefix, which has a value hello again, with the value of the field name in the input message request, which is of type `HelloRequest`. The combined string is set to the value of the output message reply, and this is of type `HelloReply`, and this completes the operation successfully.
 
 ### 10.4. The Client Program
 
@@ -230,10 +234,12 @@ Next, here is the example of the actual service implementation. This is what wil
 
 ![Lesson 2 slide 37: 10. Examples of RPC Systems: gRPC](slides/lesson-02/page-37.png)
 
-In the client program, we will create a client context with the gRPC runtime for the Greeter service. Then we can call the RPC operations that this service provides, like Say Hello for instance. The actual call to these operations results in a call to the corresponding method in the stub layer. The full code listing is part of the grpcu tutorial on the main gRPC website.
+In the client program, we will create a client context with the gRPC runtime for the Greeter service. Then we can call the RPC operations that this service provides, like `SayHello` for instance. The actual call to these operations results in a call to the corresponding method in the stub layer. The full code listing is part of the gRPC tutorial on the main gRPC website.
 
 ## 11. Summary
 
+In this lesson, we briefly reviewed remote procedure calls.
+
 ![Lesson 2 slide 39: 11. Summary](slides/lesson-02/page-39.png)
 
-In this lesson, we briefly reviewed remote procedure calls. We said that RPC is a basic mechanism for building client server distributed systems. We briefly reviewed the requirements and the main components of an RPC system. We provided some examples. Many of the upcoming lessons and papers discussed in this course will be built on top of an RPC system with similar features as what we discussed here.
+We said that RPC is a basic mechanism for building client server distributed systems. We briefly reviewed the requirements and the main components of an RPC system. We provided some examples. Many of the upcoming lessons and papers discussed in this course will be built on top of an RPC system with similar features as what we discussed here.

@@ -4,9 +4,11 @@ Source: [Lesson 1 — Video](https://www.youtube.com/watch?v=SuZQNazU48w)
 
 ## 1. Introduction
 
+Welcome to the first lesson of the distributed computing class: introduction to distributed systems.
+
 ![Lesson 1 slide 2: Lesson Introduction](slides/lesson-01/page-02.png)
 
-Welcome to the first lesson of the distributed computing class: introduction to distributed systems. In this introductory lesson, we will learn what is a distributed system. We will learn what are some of the unique properties of distributed systems that make distributed computing hard and how, as a community, we have made tremendous progress with the development of fundamental concepts and practical implementations of distributed systems by relying on good models and clear assumptions.
+In this introductory lesson, we will learn what is a distributed system. We will learn what are some of the unique properties of distributed systems that make distributed computing hard and how, as a community, we have made tremendous progress with the development of fundamental concepts and practical implementations of distributed systems by relying on good models and clear assumptions.
 
 ![Lesson 1 slide 3: References of Note](slides/lesson-01/page-03.png)
 
@@ -48,7 +50,7 @@ If you have scanned the course syllabus, then you already know that in this clas
 
 In many cases, we will explicitly use these papers, some of which teach distributed computing concepts in humorous and story-like manner. For instance, they talk about Byzantine generals, or about the votes of the ancient Greek parliament and the make-believe island of Paxos.
 
-Leslie Lamport's most recent contributions include his work on TLA plus, a formal specification language and framework that can be used for modeling and formally verifying distributed systems.
+Leslie Lamport's most recent contributions include his work on TLA+, a formal specification language and framework that can be used for modeling and formally verifying distributed systems.
 
 ### 3.2. Interpreting the Definition
 
@@ -74,9 +76,9 @@ Stated then more formally, a distributed system is a collection of independent, 
 
 ![Lesson 1 slide 12: Simple DS Model - Nodes and Channels](slides/lesson-01/page-12.png)
 
-The easiest way to reason about a distributed system is to represent it via some model. The simplest way to represent a distributed system is via a model which illustrates the nodes in the system and the messages among them. So here we have a system. It has two nodes, and one and N2, and there is a message that's exchanged among them. Imagine that this is a time axis, and over some time this distributed system is in some different state when there is a message, another message, message to being sent from N2 to N1.
+The easiest way to reason about a distributed system is to represent it via some model. The simplest way to represent a distributed system is via a model which illustrates the nodes in the system and the messages among them. So here we have a system. It has two nodes, $n_1$ and $n_2$, and there is a message that's exchanged among them. Imagine that this is a time axis, and over some time this distributed system is in some different state when there is a message, another message, message 2 being sent from $n_2$ to $n_1$.
 
-With this model, each node is characterized with the communication channels that it uses to send messages to other nodes, or to receive messages from other nodes. We do not care about the underlying network, whether these messages need to traverse one or many hops. At the level of this model, if there is a message sent from node N1 to node N2, then there is a channel from node N1 to N2. And for simplicity, in the simple model, the channels are unidirectional. So messages from N2 to N1, they may follow exactly the same communication lengths as the messages from N1 to N2, but in this simple model they're represented as two separate channels each pointing in a different direction.
+With this model, each node is characterized with the communication channels that it uses to send messages to other nodes, or to receive messages from other nodes. We do not care about the underlying network, whether these messages need to traverse one or many hops. At the level of this model, if there is a message sent from node $n_1$ to node $n_2$, then there is a channel from node $n_1$ to $n_2$. And for simplicity, in the simple model, the channels are unidirectional. So messages from $n_2$ to $n_1$, they may follow exactly the same communication links as the messages from $n_1$ to $n_2$, but in this simple model they're represented as two separate channels each pointing in a different direction.
 
 ### 4.2. Processing and Observable Messages
 
@@ -90,7 +92,7 @@ This model is also very general in terms of the types of system behaviors that i
 
 Or if we take a look at this statement that a message is being sent or delivered zero or more times, that can let us describe a system in which the communication is unreliable. Messages are getting close, so it's zero times. Or messages keep getting retransmitted and we have duplicates, so this would be more time.
 
-The fact that a message can be sent to one or more channels, it lets us describe systems in which nodes interact in a point-to-point way, or when they use some sort of multicast mechanism so that one note sends the same message to multiple other nodes.
+The fact that a message can be sent to one or more channels, it lets us describe systems in which nodes interact in a point-to-point way, or when they use some sort of multicast mechanism so that one node sends the same message to multiple other nodes.
 
 ## 5. A Slightly More Complex Model of a Distributed System
 
@@ -122,7 +124,7 @@ So for these reasons, we will see in this class that a lot of the work that has 
 
 ![Lesson 1 slide 19: Model Elements, Rules, and Invariants](slides/lesson-01/page-19.png)
 
-We've seen a couple of simple models so far. Both of these, and any model in general, will be characterized by several things. They'll include some system elements and some rules. For instance in the context of the models that we described, the elements are collection of notes, the collection of channels. The rules: that sending a message somehow means that a message is added to the channel. Receiving a message means that a message is consumed from the channel, removed from the channel, perhaps, unless we want to characterize some other properties of this channel.
+We've seen a couple of simple models so far. Both of these, and any model in general, will be characterized by several things. They'll include some system elements and some rules. For instance in the context of the models that we described, the elements are collection of nodes, the collection of channels. The rules: that sending a message somehow means that a message is added to the channel. Receiving a message means that a message is consumed from the channel, removed from the channel, perhaps, unless we want to characterize some other properties of this channel.
 
 A model can also be designed with some assumptions, and what these assumptions translate to is some invariants which are always supposed to be true for the model. For instance, a model which says that every message is delivered after some time implies that there is an assumption that messages will not be lost or infinitely delayed. Every message delivered after some time: such models make an assumption about lossless communication and that the network will not fail.
 
@@ -136,7 +138,7 @@ When picking a model, it's important to ensure a few things. The most important 
 
 ![Lesson 1 slide 21: Examples of Model Assumptions](slides/lesson-01/page-21.png)
 
-It turns out that the simple models we mentioned earlier, they're sufficiently powerful to allow for a number of investigations in distributed systems. For example, these models, they can let us represent systems in which we can evaluate some basic algorithms. We can consider some simple applications and directions. We can represent some simple scenarios where we want to say, well, all notes in the system have received all messages. Or we want to represent the system in which we want to ensure that all nodes receive all messages, but only provided they can be guaranteed that these messages have the same information about the note state.
+It turns out that the simple models we mentioned earlier, they're sufficiently powerful to allow for a number of investigations in distributed systems. For example, these models, they can let us represent systems in which we can evaluate some basic algorithms. We can consider some simple applications and directions. We can represent some simple scenarios where we want to say, well, all nodes in the system have received all messages. Or we want to represent the system in which we want to ensure that all nodes receive all messages, but only provided they can be guaranteed that these messages have the same information about the node state.
 
 Or maybe we want to describe a system in which the behavior is such that all messages will be delivered eventually. And it's possible to have such a system indeed in practice. You just keep re-transmitting messages.
 
@@ -150,13 +152,15 @@ To read more about this, look at the chapter “What Models Are Good and What Go
 
 ## 7. What is Hard about Distributed Systems?
 
+As we have already seen, there are a number of possible complications in distributed systems that introduce some sort of uncertainty and non-determinism, and this makes it hard to know exactly what a system will do, how it will behave, or to analyze how it should behave.
+
 ![Lesson 1 slide 24: Asynchrony, Failures, and Consistency](slides/lesson-01/page-24.png)
 
-As we have already seen, there are a number of possible complications in distributed systems that introduce some sort of uncertainty and non-determinism, and this makes it hard to know exactly what a system will do, how it will behave, or to analyze how it should behave. It then becomes hard to say whether a system is or isn't correct. These are precisely the things that make distributed computing hard. Let's summarize these more formally.
+It then becomes hard to say whether a system is or isn't correct. These are precisely the things that make distributed computing hard. Let's summarize these more formally.
 
 ### 7.1. Asynchrony
 
-One thing is asynchrony. There is a difference between a system that guarantees instant message delivery, versus a system that gives us fixed bound on how long does it take for a message to be delivered, versus one in which message delivery is unpredictable, may have even infinite latency. Most real systems fall in this last category of having unpredictable and potentially infinite latency, meaning that potentially messages can be lost. In these kinds of systems we call asynchronous. Clearly, this property will have significant implications in system design. How you will design the system if you think that messages are going to be instantaneously delivered, or if you think that the messages are guaranteed to be delivered within a fixed amount of time, it's going to be very different than if you have to build a system that will have to work with potential message laws, message reordering, or potentially messages that are delayed some unknown amount of time.
+One thing is asynchrony. There is a difference between a system that guarantees instant message delivery, versus a system that gives us fixed bound on how long does it take for a message to be delivered, versus one in which message delivery is unpredictable, may have even infinite latency. Most real systems fall in this last category of having unpredictable and potentially infinite latency, meaning that potentially messages can be lost. In these kinds of systems we call asynchronous. Clearly, this property will have significant implications in system design. How you will design the system if you think that messages are going to be instantaneously delivered, or if you think that the messages are guaranteed to be delivered within a fixed amount of time, it's going to be very different than if you have to build a system that will have to work with potential message loss, message reordering, or potentially messages that are delayed some unknown amount of time.
 
 ### 7.2. Failures
 
@@ -166,7 +170,7 @@ And then these failures may concern an individual server or process, or they may
 
 ### 7.3. Consistency
 
-Another thing that's hard about distributed computing is thinking about consistency. What we mean by consistency in this context, is that we want to have a single and up-to-date copy of any data or any state that's part of the distributed system, and that all notes will be in agreement of what that single up-to-date value is. In order for a distributed system to be able to come to that kind of agreement, there are a lot of factors that need to be considered. What is the concurrency or the ordering of the different operations that happen in the system? Is the data in some way replicated? Is it possible to cache the data somewhere? The fact that we have to consider all of these things, and the fact that many of these things introduce different kinds of trade-offs with respect to the performance of the system, the types of failures that it can deal with, these are again some things that make distributed computing hard.
+Another thing that's hard about distributed computing is thinking about consistency. What we mean by consistency in this context, is that we want to have a single and up-to-date copy of any data or any state that's part of the distributed system, and that all nodes will be in agreement of what that single up-to-date value is. In order for a distributed system to be able to come to that kind of agreement, there are a lot of factors that need to be considered. What is the concurrency or the ordering of the different operations that happen in the system? Is the data in some way replicated? Is it possible to cache the data somewhere? The fact that we have to consider all of these things, and the fact that many of these things introduce different kinds of trade-offs with respect to the performance of the system, the types of failures that it can deal with, these are again some things that make distributed computing hard.
 
 ### 7.4. The Fallacies of Distributed Computing
 
@@ -280,6 +284,8 @@ This observation is summarized in work by Daniel Abadi, and it's abbreviated as 
 
 ## 11. Summary
 
+Let's summarize what we've learned in this lesson.
+
 ![Lesson 1 slide 39: Lesson Summary](slides/lesson-01/page-39.png)
 
-Let's summarize what we've learned in this lesson. We saw what are distributed systems and discussed some of the prevalent definitions and some of the desirable properties of a distributed system. We also discussed the importance of well-selected models for analyzing and designing better distributed systems. And finally, we learned about some important references and computer scientists that continue to influence distributed systems advances today.
+We saw what are distributed systems and discussed some of the prevalent definitions and some of the desirable properties of a distributed system. We also discussed the importance of well-selected models for analyzing and designing better distributed systems. And finally, we learned about some important references and computer scientists that continue to influence distributed systems advances today.

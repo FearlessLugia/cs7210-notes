@@ -16,9 +16,11 @@ We will also briefly mention some concrete implementations of consensus-based se
 
 ## 2. Goal of Consensus Protocol
 
+Let's informally see what is the role of a consensus protocol one more time.
+
 ![Lesson 8 slide 4: 2. Goal of Consensus Protocol](slides/lesson-08/page-04.png)
 
-Let's informally see what is the role of a consensus protocol one more time. Remember, by consensus protocol, we mean that a group of processes in a distributed system can agree on what is the value of a shared state. And we need an algorithm or a protocol that will make sure that such agreement can be reached, that the value in which the processes will agree is a valid value that was indeed proposed by somebody.
+Remember, by consensus protocol, we mean that a group of processes in a distributed system can agree on what is the value of a shared state. And we need an algorithm or a protocol that will make sure that such agreement can be reached, that the value in which the processes will agree is a valid value that was indeed proposed by somebody.
 
 To do this, we will consider a distributed system where nodes have different types of roles. There may be proposer nodes, which are the ones participating in the system by proposing possible values for the shared piece of state. There will be acceptors, and these are the nodes that participate in the agreement by evaluating proposals and deciding which one of them is indeed going to be chosen as the proposed value. And making this type of decision typically considers some notion of the order of the proposals, typically based on some timestamps. And finally, there will be learners, and these are the nodes in the system that need to access. They need to read the value. They need to learn what is the current value of the shared state. Typically, based on this, they will decide how to proceed further in their execution.
 
@@ -30,7 +32,7 @@ Keep in mind that we discussed the FLP theorem which said that it was impossible
 
 ## 3. 2PC and 3PC
 
-Two protocols originating from the database community are examples of consensus protocols. These are called two pc, two phase commit, and three pc, three-phase commit.
+Two protocols originating from the database community are examples of consensus protocols. These are called 2PC, two phase commit, and 3PC, three-phase commit.
 
 ![Lesson 8 slide 7: 3. 2PC and 3PC](slides/lesson-08/page-07.png)
 
@@ -40,9 +42,11 @@ The three-phase commit protocol addresses this blocking problem. There is an ini
 
 ## 4. Paxos History
 
+One of the most popular consensus protocols is Paxos.
+
 ![Lesson 8 slide 9: 4. Paxos History](slides/lesson-08/page-09.png)
 
-One of the most popular consensus protocols is Paxos. And let's start by talking about the history of Paxos. The original paper about Paxos was written in 1990 by Leslie Lamport. Interestingly, the paper wasn't published until eight years later in 1998. Part of the reason that it wasn't published is because the reviewers, the original reviewers, really didn't appreciate the humorous description of the algorithm that Leslie Lamport originally presented in terms of busy parliamentarians on some fictional island Paxos, in ancient Greece.
+And let's start by talking about the history of Paxos. The original paper about Paxos was written in 1990 by Leslie Lamport. Interestingly, the paper wasn't published until eight years later in 1998. Part of the reason that it wasn't published is because the reviewers, the original reviewers, really didn't appreciate the humorous description of the algorithm that Leslie Lamport originally presented in terms of busy parliamentarians on some fictional island Paxos, in ancient Greece.
 
 ![Lesson 8 slide 10: 4. Paxos History](slides/lesson-08/page-10.png)
 
@@ -74,11 +78,13 @@ Finally, Paxos works even when messages arrive out of order. It does this by hea
 
 ## 6. Paxos Made Simple: Phases
 
+Let's talk about the different phases in the Paxos protocol.
+
 ![Lesson 8 slide 16: 6. Paxos Made Simple: Phases](slides/lesson-08/page-16.png)
 
-Let's talk about the different phases in the Paxos protocol. The protocol has three phases.
+The protocol has three phases.
 
-During the first prepare phase, a node which is trying to propose that the rest of the participants reach a consensus and agree upon a value, sends a proposed message. The proposed message is timestamped by the order number of the proposal, so proposal number one, proposal number two, and so forth. This value serves like a timestamp of the proposal, so one can distinguish an older from a more recent proposal. In this illustration, and is that timestamp indicating the order number of the agreement proposal.
+During the first prepare phase, a node which is trying to propose that the rest of the participants reach a consensus and agree upon a value, sends a proposed message. The proposed message is timestamped by the order number of the proposal, so proposal number one, proposal number two, and so forth. This value serves like a timestamp of the proposal, so one can distinguish an older from a more recent proposal. In this illustration, $n$ is that timestamp indicating the order number of the agreement proposal.
 
 The initiator, or the node that's currently leading this protocol round, then gathers responses from the participants. The responses are messages sent by the participants in which they communicate whether they're willing to commit to agree to a proposal with the same proposal number if the nodes have already agreed to something, these response messages will include information about the value that they're willing to agree to and the timestamp of the agreement proposal they're agreeing to.
 
@@ -106,7 +112,7 @@ There are other nodes in the system. These are called learners. These are the cl
 
 When a participant, an acceptor, receives the prepare message, it looks at whether it is able to make a commitment to commit to this incoming proposal given the proposal ID. Again, if the acceptor has not previously agreed to anything else, it will be able to agree to the proposal. It will send the promise to indicate this agreement in the response to the prepare request. That's the case in the scenario in this example, and we will look at what happens in other cases shortly.
 
-A key thing with Paxos is that it is designed to work correctly even when nodes fail and then later restart and rejoin the system. To achieve correctness, everything that happens needs to involve a confirmation from a majority quorum. If there are n nodes in the system, the proposer has to receive agreement from at least n over two plus one responses for a majority quorum to be met. So this completes the prepare phase.
+A key thing with Paxos is that it is designed to work correctly even when nodes fail and then later restart and rejoin the system. To achieve correctness, everything that happens needs to involve a confirmation from a majority quorum. If there are $n$ nodes in the system, the proposer has to receive agreement from at least $n/2+1$ responses for a majority quorum to be met. So this completes the prepare phase.
 
 ## 8. Paxos: Accept Phase
 
@@ -164,9 +170,11 @@ The thing to note here is that the acceptors insist on the value bar, because th
 
 ## 11. Paxos vs. FLP
 
+Remember now, we said that Paxos is not at odds with the FLP theorem.
+
 ![Lesson 8 slide 31: 11. Paxos vs. FLP](slides/lesson-08/page-31.png)
 
-Remember now, we said that Paxos is not at odds with the FLP theorem. What do we mean by that? It is a protocol that makes it possible to reach a consensus, but it doesn't guarantee that progress can always be made. It doesn't guarantee liveness.
+What do we mean by that? It is a protocol that makes it possible to reach a consensus, but it doesn't guarantee that progress can always be made. It doesn't guarantee liveness.
 
 This situation we described at the end of the previous module is such that two proposers keep issuing a sequence of proposals with increasing numbers. If before the first value is accepted by the majority of the acceptors, or even learned by the majority of learners, next value in the system comes in and is accepted as a proposal, then no node will receive a majority quorum for the previous value, and this previous value will not be learned. If this continues, then there is no guarantee that the system will reach a decision. There's no guarantee that the system will be making forward progress.
 
@@ -300,20 +308,26 @@ When a node such as node 4 needs to recover, Raft allows for the leader to send 
 
 ## 18. RAFT Safety
 
+Raft guarantees safety by having the following properties.
+
 ![Lesson 8 slide 55: 18. RAFT Safety](slides/lesson-08/page-55.png)
 
-Raft guarantees safety by having the following properties. It has a property about leader completeness. Once committed, a log entry won't be overwritten. It also has a property about state machine safety. Once a log entry is applied in a node, no other node will apply a different log entry in the same slot of the log.
+It has a property about leader completeness. Once committed, a log entry won't be overwritten. It also has a property about state machine safety. Once a log entry is applied in a node, no other node will apply a different log entry in the same slot of the log.
 
 All of these properties that we mentioned about leader election, log replication, about safety, the formal proofs that appear in the original longer paper about Raft. And following these properties, this is what guarantees that Raft will ultimately allow nodes to agree upon a single value, that a single value will be chosen, and that eventually, it will be learned by all nodes.
 
 ## 19. RAFT in Action
 
+Like with Paxos, there is a lot of information online on Raft.
+
 ![Lesson 8 slide 57: 19. RAFT in Action](slides/lesson-08/page-57.png)
 
-Like with Paxos, there is a lot of information online on Raft. I recommend the following two links which include, interestingly, some interactive animations of how Raft works, how the messages are exchanged, how values get selected, how leaders get elected. The Raft Github repository also includes a link to many known Raft implementations in different languages.
+I recommend the following two links which include, interestingly, some interactive animations of how Raft works, how the messages are exchanged, how values get selected, how leaders get elected. The Raft Github repository also includes a link to many known Raft implementations in different languages.
 
 ## 20. Summary
 
+Let's summarize this lesson.
+
 ![Lesson 8 slide 59: 20. Summary](slides/lesson-08/page-59.png)
 
-Let's summarize this lesson. We discussed two of the most popular consensus algorithms: Paxos and Raft. And we also briefly mentioned several other solutions which both influenced the design of these algorithms, or enabled further optimizations, and or operationalize them.
+We discussed two of the most popular consensus algorithms: Paxos and Raft. And we also briefly mentioned several other solutions which both influenced the design of these algorithms, or enabled further optimizations, and or operationalize them.

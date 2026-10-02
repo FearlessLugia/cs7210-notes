@@ -4,17 +4,21 @@ Source: [Lesson 12 — Video](https://www.youtube.com/watch?v=4FLlpRLttoE)
 
 ## 1. Introduction
 
+In this lesson, we will discuss several techniques common in distributed systems data processing frameworks.
+
 ![Lesson 12 slide 2: 1. Introduction](slides/lesson-12/page-02.png)
 
-In this lesson, we will discuss several techniques common in distributed systems data processing frameworks. A major expectation of distributed applications is that they will be able to utilize the distributed computing resources to process large and growing data sets. In contrast to systems focused on storing and serving on request data from distributed data stores, the focus of the distributed data processing frameworks is to provide the programming and runtime systems for performing the distributed processing and analysis of data.
+A major expectation of distributed applications is that they will be able to utilize the distributed computing resources to process large and growing data sets. In contrast to systems focused on storing and serving on request data from distributed data stores, the focus of the distributed data processing frameworks is to provide the programming and runtime systems for performing the distributed processing and analysis of data.
 
 A poster child for this kind of processing framework is the MapReduce model which in its current form was presented in an OSDI paper by Google in 2004, but then it was further popularized due to the Hadoop open source MapReduce framework. Although MapReduce is a very successful and still broadly used model, there are many other systems that have emerged over the years, and these systems are optimized for different classes of analytics problems. For instance, for interactive systems, for streaming systems, where data is continuously and incrementally updated, or for systems which are adapted for a data model that better matches the application's requirements, for instance, for graph processing. We'll mention briefly some of these systems, and we will talk in more detail about Spark, with a focus on its use of the RDD abstraction to achieve speed and flexibility to support different types of analytics workloads.
 
 ## 2. Data Processing at Scale
 
+Let's look at a couple of common techniques that appear in some form in all of these data processing systems.
+
 ![Lesson 12 slide 4: 2. Data Processing at Scale](slides/lesson-12/page-04.png)
 
-Let's look at a couple of common techniques that appear in some form in all of these data processing systems. One technique is to take a so-called data parallel approach, where the data is divided, perhaps in equal parts, but not necessarily, and each subset is assigned to a different node in the system. This is an approach commonly used also in traditional scientific applications, such as some of the scientific simulations run by the us national labs.
+One technique is to take a so-called data parallel approach, where the data is divided, perhaps in equal parts, but not necessarily, and each subset is assigned to a different node in the system. This is an approach commonly used also in traditional scientific applications, such as some of the scientific simulations run by the us national labs.
 
 There are several assumptions that underline this model. One is that it is possible to achieve partitioning of the data in a way that is going to ensure good load balancing. This is not trivial. How do you know how to decompose the original data set, so you don't have unused nodes sitting idle and others which are overloaded? If the processing that's required by each node is input dependent, meaning it depends on the values of the input data and not just on the size of the input, then it is quite possible that we will run into some sort of imbalance issues.
 
@@ -28,7 +32,7 @@ Another common technique is pipelining. This is a useful technique when we need 
 
 ![Lesson 12 slide 6: 2. Data Processing at Scale](slides/lesson-12/page-06.png)
 
-In addition, the processing requirements depend on the state that's required by the application. We can illustrate this with a deep neural network model, for instance. We can store and use the full model at each node, or we can store just some subset of the errors at the individual nodes. In that sense, each slice of this application state, or its model, is assigned to different nodes in the system.
+In addition, the processing requirements depend on the state that's required by the application. We can illustrate this with a deep neural network model, for instance. We can store and use the full model at each node, or we can store just some subset of the layers at the individual nodes. In that sense, each slice of this application state, or its model, is assigned to different nodes in the system.
 
 ![Lesson 12 slide 7: 2. Data Processing at Scale](slides/lesson-12/page-07.png)
 
@@ -36,9 +40,11 @@ When a data input needs to be processed, it is distributed to all nodes, and eac
 
 ## 3. MapReduce Brief
 
+Let's look now how these techniques come together in some of the current distributed systems for processing large data sets.
+
 ![Lesson 12 slide 9: 3. MapReduce Brief](slides/lesson-12/page-09.png)
 
-Let's look now how these techniques come together in some of the current distributed systems for processing large data sets. Probably among the most famous system that really revolutionized big data processing across the board is MapReduce. The MapReduce model was originally presented in a paper MapReduce: Simplified data processing on large-scale clusters which was presented at OSDI 2004, by Jeff Dean and Sanjay Ghemawat. And for this and other work contributions that the two of them have made to the field of large-scale systems, they've both been elevated to members of the u.s national academy of engineers and the american academy of arts and sciences.
+Probably among the most famous system that really revolutionized big data processing across the board is MapReduce. The MapReduce model was originally presented in a paper MapReduce: Simplified data processing on large-scale clusters which was presented at OSDI 2004, by Jeff Dean and Sanjay Ghemawat. And for this and other work contributions that the two of them have made to the field of large-scale systems, they've both been elevated to members of the u.s national academy of engineers and the american academy of arts and sciences.
 
 As a model, MapReduce existed in some forms and was used in other places. For instance, LexisNexis, the company that provides data services to many communities, such as the legal, the medical communities, to governments, they had internally a similar system which subsequently they open sourced in the form of HPCC. But in this paper, they both introduced the term and also popularized the model. And what really helped was that soon afterwards, Yahoo released the open source Hadoop MapReduce stack, which has evolved over time and is still widely used. And of course, also instrumental was that the actual large-scale infrastructure became more broadly available through the rise of cloud computing, and particularly in the form of Amazon's elastic cloud computing EC2, and other AWS services.
 
@@ -66,15 +72,15 @@ Another way to characterize the MapReduce model is to say that it's a data flow 
 
 ## 4. Design Decisions MapReduce
 
-![Lesson 12 slide 14: 4. Design Decisions MapReduce](slides/lesson-12/page-14.png)
-
 A system which implements the MapReduce model needs to make several design decisions concerning several dimensions.
+
+![Lesson 12 slide 14: 4. Design Decisions MapReduce](slides/lesson-12/page-14.png)
 
 There's first, the decisions regarding the master's data structures. How much state will the master maintain per worker? How will it organize it? How frequently will it update it? So how fresh will it be? How will it track progress in the system to know whether to start scheduling reducers or not yet? Second set of decisions concern locality. The locality can be with respect to how the mappers and reducers will be scheduled on which nodes. For instance, how will they be placed with respect to the data that they need as inputs, or that they produce as outputs? For instance, the intermediate results.
 
 Then there are decisions regarding the task granularity. The task granularity that ultimately determines the control that the system will have. Which granularity can it independently scale the system? If we have finer granularity, then we have more flexibility, and that will have some impact on the execution time of the management operation. If we have larger granularity of how the tasks are organized, that's going to reduce the flexibility, but it will also lower some of the management overhead there. There will be fewer things that we'll need to keep track of.
 
-Then there are decisions with respect to how the fault tolerance of the system will be supported. Regarding the master, since it's typically a single master, then are we going to deploy some standby nodes, like a standby replication, in order to ensure that the system will survive the master's failure? Regarding the worker nodes, we need to make some decisions. How our failure is going to be detected? Failures can concern actual node failures, but also, they can concern what we call stragglers, or nodes which are really really slow. And so potentially, we need to make decisions on when are we going to make a call that something needs to be re-executed since something's just slow. We can't really tell the difference between the failed note and a note which is very very slow, so potentially, we'll be essentially re-executing something that's still ongoing on a slow note.
+Then there are decisions with respect to how the fault tolerance of the system will be supported. Regarding the master, since it's typically a single master, then are we going to deploy some standby nodes, like a standby replication, in order to ensure that the system will survive the master's failure? Regarding the worker nodes, we need to make some decisions. How our failure is going to be detected? Failures can concern actual node failures, but also, they can concern what we call stragglers, or nodes which are really really slow. And so potentially, we need to make decisions on when are we going to make a call that something needs to be re-executed since something's just slow. We can't really tell the difference between the failed node and a node which is very very slow, so potentially, we'll be essentially re-executing something that's still ongoing on a slow node.
 
 And for systems of this scale, fault tolerance, making good decisions regarding fault tolerance is super important, because there's so many components that need to come together for these very large systems. And we know that the more components we bring together, the system overall is much more likely to exhibit failures somewhere within one of these components.
 
@@ -90,9 +96,11 @@ The paper describes the concrete decisions that were made regarding all of these
 
 ## 5. Limitations of MapReduce
 
+Now, there are also a number of challenges that exist in the MapReduce model and framework as we described it so far.
+
 ![Lesson 12 slide 17: 5. Limitations of MapReduce](slides/lesson-12/page-17.png)
 
-Now, there are also a number of challenges that exist in the MapReduce model and framework as we described it so far. MapReduce depends on there being persistent IO, meaning that all of these files, intermediate data, they have been made persistent. This is tied to the fault tolerance mechanisms. Inputs can always be re-read, so these intermediate files can just be re-read, and the pipeline can be re-executed from there. This intermediate data, in a sense, presents some checkpoint. This is an important decision that is deliberately made in the system, because as I said, at these scales, failures are inevitable. In that sense, having a fault tolerance mechanism that will be able to make an assumption that this intermediate data is available is important. We already talked about fault tolerance, and we described how fault tolerance methods use checkpointing, and so this intermediate data presents that kind of checkpoint.
+MapReduce depends on there being persistent IO, meaning that all of these files, intermediate data, they have been made persistent. This is tied to the fault tolerance mechanisms. Inputs can always be re-read, so these intermediate files can just be re-read, and the pipeline can be re-executed from there. This intermediate data, in a sense, presents some checkpoint. This is an important decision that is deliberately made in the system, because as I said, at these scales, failures are inevitable. In that sense, having a fault tolerance mechanism that will be able to make an assumption that this intermediate data is available is important. We already talked about fault tolerance, and we described how fault tolerance methods use checkpointing, and so this intermediate data presents that kind of checkpoint.
 
 However, there are multiple problems with this model. One is that in order for us to read or write to block storage, to this persistent storage, we have to pay serialization costs. Data has to be serialized in and out of the memory of the different workers in the pipeline. The particular challenge is that given the scale of these machines, often, there is a choice that's made that the storage components are not going to maybe be the best in class, the most expensive, so that's going to have some implication on the performance of these i o operations.
 
@@ -106,21 +114,25 @@ And finally, given the scales of these systems, we cannot really assume that the
 
 ## 6. Spark
 
+Several other frameworks exist for distributed processing of big applications, and some offer better programmability.
+
 ![Lesson 12 slide 19: 6. Spark](slides/lesson-12/page-19.png)
 
-Several other frameworks exist for distributed processing of big applications, and some offer better programmability. Some offer more tailored support for particular types of data, particular types of application. In the remainder of this lesson, we'll talk some more about one of these frameworks. We'll talk about Spark.
+Some offer more tailored support for particular types of data, particular types of application. In the remainder of this lesson, we'll talk some more about one of these frameworks. We'll talk about Spark.
 
-Spark started as a research project, was led by, at the time, phd student Matei Zaharia, while he was at UC Berkeley. And it was published in, across really multiple papers, but one of the papers that stands out, like the first on Spark, is the paper on resilient distributed data sets, which is a feature of Spark. It was published at NSDI in 2012. Spark has been shown to provide much faster analytics for many different workload types, including graph, including streaming workload, including relational databases. It has support for many different language binding, and it can be executed. So Spark as analytics platform has native support on AWS, but it can also be executed in other types of orchestration layers. Today's park is an Apache project with raid adoption.
+Spark started as a research project, was led by, at the time, phd student Matei Zaharia, while he was at UC Berkeley. And it was published in, across really multiple papers, but one of the papers that stands out, like the first on Spark, is the paper on resilient distributed data sets, which is a feature of Spark. It was published at NSDI in 2012. Spark has been shown to provide much faster analytics for many different workload types, including graph, including streaming workload, including relational databases. It has support for many different language binding, and it can be executed. So Spark as analytics platform has native support on AWS, but it can also be executed in other types of orchestration layers. Today, Spark is an Apache project with wide adoption.
 
 ![Lesson 12 slide 20: 6. Spark](slides/lesson-12/page-20.png)
 
-The main motivation for designing Spark is precisely to address some of the problems we described with the MapReduce framework that have to do with their i o overhangs. Spark's goal is to address these problems, to solve them, by allowing in-memory data sharing. The benefits of this are really two-fold. First, DRAM is much faster than a slow hard disk drives, or even SSDs. And second, if data is in memory, then we avoid the serialization overhangs, right? We have to otherwise somehow serialize data in order to be able to write it into a block of storage. In addition, Spark opens up opportunities to achieve fault tolerance using some different mechanisms than what was used in the MapReduce framework.
+The main motivation for designing Spark is precisely to address some of the problems we described with the MapReduce framework that have to do with their I/O overheads. Spark's goal is to address these problems, to solve them, by allowing in-memory data sharing. The benefits of this are really two-fold. First, DRAM is much faster than a slow hard disk drives, or even SSDs. And second, if data is in memory, then we avoid the serialization overheads, right? We have to otherwise somehow serialize data in order to be able to write it into a block of storage. In addition, Spark opens up opportunities to achieve fault tolerance using some different mechanisms than what was used in the MapReduce framework.
 
 ## 7. Resilient Distributed Datasets (RDDs)
 
+So how does Spark achieve this goal?
+
 ![Lesson 12 slide 22: 7. Resilient Distributed Datasets (RDDs)](slides/lesson-12/page-22.png)
 
-So how does Spark achieve this goal? It achieves it by relying on this RDD abstraction: resilient distributed data sets. An RDD is a read-only, which means immutable, collection of records, and they can be partitioned on different machines. The fact that something is immutable, it means it can only be created, and cannot be modified.
+It achieves it by relying on this RDD abstraction: resilient distributed data sets. An RDD is a read-only, which means immutable, collection of records, and they can be partitioned on different machines. The fact that something is immutable, it means it can only be created, and cannot be modified.
 
 ![Lesson 12 slide 23: 7. Resilient Distributed Datasets (RDDs)](slides/lesson-12/page-23.png)
 
@@ -134,9 +146,11 @@ The Spark system provides its users with some explicit APIs that allow them to c
 
 ## 8. RDDs through Example
 
+Let's now look at some of the algorithms described in the paper.
+
 ![Lesson 12 slide 26: 8. RDDs through Example](slides/lesson-12/page-26.png)
 
-Let's now look at some of the algorithms described in the paper. Here is a log mining example that is used as an illustration in the paper. I will describe both the example, as well as the Spark execution model, at the same time.
+Here is a log mining example that is used as an illustration in the paper. I will describe both the example, as well as the Spark execution model, at the same time.
 
 Spark still assumes a distributed set of machines, and a large data set is stored on persistent storage. The actual computation is performed by workers, and the precise set of steps that each worker needs to perform are controlled and coordinated by this driver. Let's assume that a large log file is stored in a file system such as HDFS, and that is distributed across the many nodes.
 
@@ -152,13 +166,15 @@ The resulting RDD, and really all other RDD in the systems, includes the actual 
 
 ## 9. RDD Transformations
 
+Let's try to understand better what happens during all of these RDD transformations.
+
 ![Lesson 12 slide 29: 9. RDD Transformations](slides/lesson-12/page-29.png)
 
-Let's try to understand better what happens during all of these RDD transformations. We said Spark supports a fixed set of transformations and actions. For instance, we mentioned map. We mentioned filter as transformation, but there are others, for instance, group by key. And then, there is join.
+We said Spark supports a fixed set of transformations and actions. For instance, we mentioned map. We mentioned filter as transformation, but there are others, for instance, group by key. And then, there is join.
 
 ![Lesson 12 slide 30: 9. RDD Transformations](slides/lesson-12/page-30.png)
 
-The choice about which primitive operations to include in the set of transformations was motivated by the types of data processing and analytics applications that the designers of Spark wanted to really support, that they found that they're useful, and that they're important across many of the data processing frameworks that preceded sparkles. Also, Spark has some basic actions such as count, collect, and reduce. These operations determine how an RDD will be transformed to another. For instance, map and filter create a new RDD where the elements have a one-to-one correspondence with the elements of the original RDD. Transformations such as group by key have many too many dependencies.
+The choice about which primitive operations to include in the set of transformations was motivated by the types of data processing and analytics applications that the designers of Spark wanted to really support, that they found that they're useful, and that they're important across many of the data processing frameworks that preceded Spark. Also, Spark has some basic actions such as count, collect, and reduce. These operations determine how an RDD will be transformed to another. For instance, map and filter create a new RDD where the elements have a one-to-one correspondence with the elements of the original RDD. Transformations such as group by key have many-to-many dependencies.
 
 In that sense, if we know the lineage of an RDD, meaning the original RDD and d transformation or series of transformations that need to be applied, then that these dependencies are going to be implied by the transformations. So you can see now how it's possible, if we lose a machine and the corresponding RDD element, just by knowing the lineage, we have all the information that's necessary to determine which are the input RDDs that need to be accessed in order for the lost element to be recomputed.
 
@@ -168,11 +184,13 @@ So when we look at a Spark program, the program itself will determine these depe
 
 ## 10. Did Spark Achieve its Goal?
 
+So does this design meet the goal that we had?
+
 ![Lesson 12 slide 33: 10. Did Spark Achieve its Goal?](slides/lesson-12/page-33.png)
 
-So does this design meet the goal that we had? Let's recap that Spark and RDDs were meant to achieve this goal of having in-memory data sharing and fault tolerance. The trick here, right, to have the in-memory and fault tolerance, because if data is not persisted, we can potentially lose it, right? Once data is brought into memory, sparks prolific distributed shared memory runtime, and it just tracks the data updates.
+Let's recap that Spark and RDDs were meant to achieve this goal of having in-memory data sharing and fault tolerance. The trick here, right, to have the in-memory and fault tolerance, because if data is not persisted, we can potentially lose it, right? Once data is brought into memory, sparks prolific distributed shared memory runtime, and it just tracks the data updates.
 
-So what needs to happen at that point? Well, you just need to log the actual update. You need to persist the lineage. But note here, you're logging at a very coarse grain. You're logging information about the transformation that was applied. You're not trying to log individual updates to individual write operations, and visual data elements that are created. You just log that the transformation operation was applied on the input.
+So what needs to happen at that point? Well, you just need to log the actual update. You need to persist the lineage. But note here, you're logging at a very coarse grain. You're logging information about the transformation that was applied. You're not trying to log individual updates to individual write operations, individual data elements that are created. You just log that the transformation operation was applied on the input.
 
 ![Lesson 12 slide 34: 10. Did Spark Achieve its Goal?](slides/lesson-12/page-34.png)
 
@@ -180,7 +198,7 @@ So clearly, if we only have to persist the log, there is less IO. In fact, we ma
 
 ![Lesson 12 slide 35: 10. Did Spark Achieve its Goal?](slides/lesson-12/page-35.png)
 
-And this is obviously not absolutely free. There is a cause that gets shifted in a sense. And so if we do have a failure, and potentially, the process of recovery can become more expensive, because we may have to re-execute a longer sequence of these transform operations. The place where Spark is able to offset some of the re-execution cost is that it can use the lineage information to very selectively re-execute transformations only for the select RDD partitions that are really necessary for the particular data that was lost, for the particular partition that was lost, and nothing else, right? So we tried to organize different systems along their trade-offs of the right throughput, therefore, and the granularity of updates that they provide. We can summarize that Spark gives us both high throughput for the cases which require lots of updates, or lots of rights to be performed, and where these operations can be specified at course granularity.
+And this is obviously not absolutely free. There is a cost that gets shifted in a sense. And so if we do have a failure, and potentially, the process of recovery can become more expensive, because we may have to re-execute a longer sequence of these transform operations. The place where Spark is able to offset some of the re-execution cost is that it can use the lineage information to very selectively re-execute transformations only for the select RDD partitions that are really necessary for the particular data that was lost, for the particular partition that was lost, and nothing else, right? So we tried to organize different systems along their trade-offs of the write throughput, therefore, and the granularity of updates that they provide. We can summarize that Spark gives us both high throughput for the cases which require lots of updates, or lots of writes to be performed, and where these operations can be specified at coarse granularity.
 
 ### 10.1. Performance Evaluation
 
@@ -190,6 +208,8 @@ Here's a simple result from the comparison of Hadoop and Spark, and how they per
 
 ## 11. Summary
 
+So in summary, in this lesson, we talked about different solutions for data processing in distributed systems at large scale.
+
 ![Lesson 12 slide 38: 11. Summary](slides/lesson-12/page-38.png)
 
-So in summary, in this lesson, we talked about different solutions for data processing in distributed systems at large scale. We talked about MapReduce, and described some of the fundamental mechanisms it incorporates, but also explained its limitations due to the excessive amount of IO and the ir related overheads. With this motivation, we then described Spark and how it is able to achieve good performance with in-memory data representation, but without losing on its fault tolerance. For this, we said Spark relies on the concept and the system support for RDDs, and the lineage information that they capture.
+We talked about MapReduce, and described some of the fundamental mechanisms it incorporates, but also explained its limitations due to the excessive amount of IO and the I/O-related overheads. With this motivation, we then described Spark and how it is able to achieve good performance with in-memory data representation, but without losing on its fault tolerance. For this, we said Spark relies on the concept and the system support for RDDs, and the lineage information that they capture.

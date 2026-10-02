@@ -4,17 +4,17 @@ Source: [Lesson 17 — Video](https://www.youtube.com/watch?v=TRxUTGHvNOU)
 
 ## 1. Introduction
 
-![Lesson 17 slide 2: 1. Introduction](slides/lesson-17/page-02.png)
-
 In this lesson, we will talk about distributed edge computing and IoT.
+
+![Lesson 17 slide 2: 1. Introduction](slides/lesson-17/page-02.png)
 
 We will summarize recent trends around new types of components and infrastructure in the computing landscape. Specifically, we will touch on edge computing and the Internet of Things and give few examples of how these trends change the distributed systems assumptions and designs.
 
 ## 2. Tiers in Computing
 
-![Lesson 17 slide 4: 2. Tiers in Computing](slides/lesson-17/page-04.png)
-
 Let's first see what is edge computing.
+
+![Lesson 17 slide 4: 2. Tiers in Computing](slides/lesson-17/page-04.png)
 
 ### 2.1. Cloud Services and End-User Devices
 
@@ -54,9 +54,11 @@ The differences among these tiers with respect to the device capabilities, the u
 
 ## 3. Why Edge Computing?
 
+Let's look a little bit more at the edge computing tier.
+
 ![Lesson 17 slide 9: 3. Why Edge Computing?](slides/lesson-17/page-09.png)
 
-Let's look a little bit more at the edge computing tier. You may be hearing the buzzword, but what really is the motivation for this trend?
+You may be hearing the buzzword, but what really is the motivation for this trend?
 
 There is a continuous increase in traffic volume, in number of devices, and in wireless bandwidth.
 
@@ -80,9 +82,9 @@ In these scenarios, connectivity is not just about games and videos and infotain
 
 ## 4. Closing the Latency/Bandwidth Gap
 
-![Lesson 17 slide 13: 4. Closing the Latency/Bandwidth Gap](slides/lesson-17/page-13.png)
-
 How do we close this gap?
+
+![Lesson 17 slide 13: 4. Closing the Latency/Bandwidth Gap](slides/lesson-17/page-13.png)
 
 ### 4.1. New Network Technologies
 
@@ -118,9 +120,11 @@ As a concept, edge computing can be pretty broad and it can refer to infrastruct
 
 ## 5. Is Edge Computing New?
 
+Now, is edge computing really new?
+
 ![Lesson 17 slide 17: 5. Is Edge Computing New?](slides/lesson-17/page-17.png)
 
-Now, is edge computing really new? We have had different types of content delivery networks for a long time. The same report from Cisco that summarizes certain trends regarding the use of the network infrastructure in the world today summarizes that over half of the Internet traffic, even back in 2017, has been served through CDNs and that number is just growing at a very substantial rate.
+We have had different types of content delivery networks for a long time. The same report from Cisco that summarizes certain trends regarding the use of the network infrastructure in the world today summarizes that over half of the Internet traffic, even back in 2017, has been served through CDNs and that number is just growing at a very substantial rate.
 
 Now CDNs, as we know, are formed by servers deployed at different locations, many different locations, closer to the end-users with the goal of offering to end-users better connectivity with lower latency and in that manner also reducing the backhaul bandwidth demand on the Internet infrastructure. In that sense, this has a very similar goal to what we said edge computing is trying to solve.
 
@@ -150,9 +154,11 @@ These various edge tiers will require proper software stacks in order to be effe
 
 ## 6. Edge Computing Drivers
 
+Let's look again at the drivers behind edge computing.
+
 ![Lesson 17 slide 23: 6. Edge Computing Drivers](slides/lesson-17/page-23.png)
 
-Let's look again at the drivers behind edge computing. We said speed of light is one of the drivers. We have to have the ability to deploy a service close enough.
+We said speed of light is one of the drivers. We have to have the ability to deploy a service close enough.
 
 The increase in data traffic creates a demand for bandwidth that on one side could be addressed with more investment in just bandwidth capacity in wires and in fiber links, but the flip side of that is it generates energy demand and this presents some fundamental challenges and limitations as to how much data we can drive to a data center.
 
@@ -196,9 +202,11 @@ A project from Microsoft Research called FarmBeats developed services for low-co
 
 ## 7. Distributed Edge Computing
 
+So what is so different about edge computing compared to what we have been doing so far when it comes to distributed computing?
+
 ![Lesson 17 slide 28: 7. Distributed Edge Computing](slides/lesson-17/page-28.png)
 
-So what is so different about edge computing compared to what we have been doing so far when it comes to distributed computing? Can we not just take the same set of technologies used in data centers and just use them across the distributed resources at the edge?
+Can we not just take the same set of technologies used in data centers and just use them across the distributed resources at the edge?
 
 A number of characteristics make the considerations of the edge environment different from the assumptions used when designing for clouds.
 
@@ -238,9 +246,9 @@ Techniques that are built in with proper assumptions will be important to delive
 
 ## 8. IoT and Distributed Transactions
 
-![Lesson 17 slide 30: 8. IoT and Distributed Transactions](slides/lesson-17/page-30.png)
-
 So let's look now at an example of how distributed computing concepts may need to be extended or modified as a result of these new infrastructure tiers and applications.
+
+![Lesson 17 slide 30: 8. IoT and Distributed Transactions](slides/lesson-17/page-30.png)
 
 For instance, consider edge services supporting IoT-based applications such as those in a home. Backend services deployed in the cloud interact with one or more gateways in the home, and these in turn interact with multiple smart devices, which provide updates from the environment that they sense, and they also present some interface to actuators that accept commands or messages to trigger some actions in the home.
 
@@ -288,9 +296,9 @@ And the third one concerns dependencies among the updates to the application lev
 
 ## 9. Transactuations
 
-![Lesson 17 slide 38: 9. Transactuations](slides/lesson-17/page-38.png)
-
 Since distributed transactions cannot help, the authors in this paper propose a new concept which is natively designed for the IoT Edge and it's called transactuations.
+
+![Lesson 17 slide 38: 9. Transactuations](slides/lesson-17/page-38.png)
 
 Transactuations are a high-level abstraction and a programming model. The transaction is specified by some application logic, sensing policy, and an actuation policy.
 
@@ -338,9 +346,11 @@ Specifically, a transaction execution will start when the sensing policy is sati
 
 ## 10. Evaluation of Transactuations
 
+The paper also evaluates whether transactuations are useful.
+
 ![Lesson 17 slide 43: 10. Evaluation of Transactuations](slides/lesson-17/page-43.png)
 
-The paper also evaluates whether transactuations are useful. It performs the evaluation with several different applications. They look to answer several concrete questions regarding the utility of transactuations.
+It performs the evaluation with several different applications. They look to answer several concrete questions regarding the utility of transactuations.
 
 What is the impact on the ability to program these kinds of use cases when using transactuations in a transactuation runtime? For this, they use lines of code as a measure which is a pretty common metric that's used when trying to evaluate some aspect of programmability.
 
@@ -384,9 +394,9 @@ The paper has much more results if you're interested.
 
 ## 11. Summary
 
-![Lesson 17 slide 47: 11. Summary](slides/lesson-17/page-47.png)
-
 In this lesson, we discuss new trends in distributed computing in terms of the emergence of new infrastructure tiers beyond just those of the mobile client devices and the remote cloud data centers.
+
+![Lesson 17 slide 47: 11. Summary](slides/lesson-17/page-47.png)
 
 These new trends sufficiently change some of the assumptions around which current distributed systems and concepts have been designed. This raises a need to rethink the current designs and abstractions.
 

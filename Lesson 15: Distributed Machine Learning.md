@@ -4,15 +4,19 @@ Source: [Lesson 15 — Video](https://www.youtube.com/watch?v=PoNzGBLUnOM)
 
 ## 1. Introduction
 
+In this lesson, we will talk about system support for distributed machine learning.
+
 ![Lesson 15 slide 2: 1. Introduction](slides/lesson-15/page-02.png)
 
-In this lesson, we will talk about system support for distributed machine learning. We will specifically do this in the context of geo-distributed systems, as opposed to data center systems. We will compare the trade-offs among different designs, and discuss the system Gaia, which leverages the fact that machine learning is approximate, and that way, it creates some improvement opportunities. We will contrast dominant centralized approaches with decentralized and collaborative peer-to-peer approaches, using the Cartel system as an example. And most of our discussions will be in the context of the training process of ML, but we will include a brief mention of some solutions targeting also machine learning inference.
+We will specifically do this in the context of geo-distributed systems, as opposed to data center systems. We will compare the trade-offs among different designs, and discuss the system Gaia, which leverages the fact that machine learning is approximate, and that way, it creates some improvement opportunities. We will contrast dominant centralized approaches with decentralized and collaborative peer-to-peer approaches, using the Cartel system as an example. And most of our discussions will be in the context of the training process of ML, but we will include a brief mention of some solutions targeting also machine learning inference.
 
 ## 2. Distributed Machine Learning
 
+Machine learning has been going through a renaissance in the last years.
+
 ![Lesson 15 slide 4: 2. Distributed Machine Learning](slides/lesson-15/page-04.png)
 
-Machine learning has been going through a renaissance in the last years. Although many of the fundamental techniques, at their core, are decades old, really, the progress that has been made with hardware and software systems solutions has made these approaches practical in these years. And this is why we witness machine learning propagating across all application domains, from health monitoring, recommendation systems, visual analytics, such as for surveillance, data center management, as well as scientific discovery, such as in the processes for climate modeling, drug discovery, and much more.
+Although many of the fundamental techniques, at their core, are decades old, really, the progress that has been made with hardware and software systems solutions has made these approaches practical in these years. And this is why we witness machine learning propagating across all application domains, from health monitoring, recommendation systems, visual analytics, such as for surveillance, data center management, as well as scientific discovery, such as in the processes for climate modeling, drug discovery, and much more.
 
 The key in the success of machine learning and artificial intelligence is the ability to build robust models by using vast amounts of data, a process which is both data intensive as well as compute intensive. In data centers, this has led to massive system configurations outfitted with high-speed networks, with many accelerators, such as GPUs, or newly created classes of accelerators, such as Google's tensor processing unit.
 
@@ -22,9 +26,11 @@ However, a lot of the data that needs to be processed is generated far from thes
 
 ## 3. Distributed Machine Learning Approaches
 
+Let's look at some different approaches to distributed machine learning.
+
 ![Lesson 15 slide 7: 3. Distributed Machine Learning Approaches](slides/lesson-15/page-07.png)
 
-Let's look at some different approaches to distributed machine learning. The simplest model is to collect all the data from all of the different locations to a single centralized place for analysis, to build the models, and then to distribute these models to all the global locations where they will be used. The downside of this, this involves tremendous amount of data movement. And this data movement can have huge implications on slowing down the performance of the machine learning process. If we compare the time that it would take to perform the same kind of machine learning computation, if all of this data were available locally, to the scenario where the data also needs to be moved from these distributed locations to centralize location and back, we would see that the later case would be 53 times slower.
+The simplest model is to collect all the data from all of the different locations to a single centralized place for analysis, to build the models, and then to distribute these models to all the global locations where they will be used. The downside of this, this involves tremendous amount of data movement. And this data movement can have huge implications on slowing down the performance of the machine learning process. If we compare the time that it would take to perform the same kind of machine learning computation, if all of this data were available locally, to the scenario where the data also needs to be moved from these distributed locations to centralize location and back, we would see that the later case would be 53 times slower.
 
 Another downside of this kind of centralized approaches is what we call data sovereignty. I mean, we have to move this data across international boundaries, and different types of laws may apply to data in different countries. An example of that can be simply privacy related.
 
@@ -40,9 +46,11 @@ The learning process is done in an iterative manner. Workers get some set of the
 
 ## 4. Geo-Distributed ML
 
+Now, we want to use the same type of machine learning system when performing machine learning operations across geo-distributed data sources in a geo-distributed manner.
+
 ![Lesson 15 slide 11: 4. Geo-Distributed ML](slides/lesson-15/page-11.png)
 
-Now, we want to use the same type of machine learning system when performing machine learning operations across geo-distributed data sources in a geo-distributed manner. Well, we can simply deploy all the worker machines and the server machines in the different data centers, and functionally, this will work. However, it will be much slower.
+Well, we can simply deploy all the worker machines and the server machines in the different data centers, and functionally, this will work. However, it will be much slower.
 
 In these results from the Gaia paper, the authors show that it is several times slower, more than 20 times slower, to perform this kind of distributed learning compared to the scenario where all of the machines are in the same data center. The main reason for this slowdown is related to the dominant characteristics of the wide area network that connects the data centers when the parameter server is configured in this kind of configuration. For this experiment, they ran the parameter server across 11 EC2 regions in the Amazon compute cloud. They observed that the slowdown was most significant when the parameter server was deployed across Amazon EC2 regions which exhibited the lowest performance in terms of their wide area connectivity. Even when the geo-distributed data centers were connected via reasonably fast wide area network, for instance, this was the case among the data centers in Virginia and California, even in those cases, the execution of the machine learning process was three to four times slower. And that's actually a significant issue.
 
@@ -50,9 +58,11 @@ Bottom line, taking this naive approach to take a system that was designed for a
 
 ## 5. Leverage Approximation
 
+In Gaia, the authors build a solution that leverages approximation.
+
 ![Lesson 15 slide 13: 5. Leverage Approximation](slides/lesson-15/page-13.png)
 
-In Gaia, the authors build a solution that leverages approximation. The key idea in that work is to decouple the synchronization of the model within the data center from the synchronization of the model among data centers. What that means is that within a data center, the workers and the parameter servers will interact in the same way as before, and will synchronize regularly. However, across data centers, parameter servers will be out of sync, and they will synchronize only infrequently to perform some periodic sync operations.
+The key idea in that work is to decouple the synchronization of the model within the data center from the synchronization of the model among data centers. What that means is that within a data center, the workers and the parameter servers will interact in the same way as before, and will synchronize regularly. However, across data centers, parameter servers will be out of sync, and they will synchronize only infrequently to perform some periodic sync operations.
 
 ![Lesson 15 slide 14: 5. Leverage Approximation](slides/lesson-15/page-14.png)
 
@@ -66,9 +76,11 @@ So the key idea in Gaia is to use only these significant updates for the remote 
 
 ## 6. Gaia: An Approximate Synchronous Parallel System
 
+In order to achieve this, the Gaia system relies on a new synchronization model that they call approximate synchronous parallel, or ASP.
+
 ![Lesson 15 slide 17: 6. Gaia: An Approximate Synchronous Parallel System](slides/lesson-15/page-17.png)
 
-In order to achieve this, the Gaia system relies on a new synchronization model that they call approximate synchronous parallel, or ASP. To support ASP, the system needs several underlying mechanisms.
+To support ASP, the system needs several underlying mechanisms.
 
 The first is a way to determine what are significant updates. The system does this by exposing an API, that would allow programmers to specify what's significant for their case. And then, the system dynamically computes the significance of the updates to, based on this function, in order to filter out the insignificant ones.
 
@@ -88,13 +100,15 @@ Let's look at a single experiment. This experiment is performed with 11 EC2 serv
 
 If we compare the case when the machine learning is performed over a local area network in the data center versus over a wide area network, this is the baseline case, the blue case, we observe a significant drop in performance. The y-axis is normalized execution time, so lower is better. So the fact that these blue bars are so much higher than the gray bars, this indicates how much worse is it to simply use the parameter server in a geo-distributed way in the same way as when we're performing machine learning in a local data center. And of course, when comparing the left and the right hand side bar, we observe that this gap between the blue bar and the gray bar for these three machine learning applications is much greater than in the case when the two data centers are closer together, or rather, connected via a better wide area network.
 
-More importantly, from these results, we observe that Gaia, the orange bars in each of these groups of bars, end up achieving performance in terms of the machine learning time, so how long did it take for the machine learning process to converge and to produce a model that's no longer really updating in significant manner, iteration from iteration, we observe that these orange bars are really close to the gray bars. What this shows is that Gaia allows machine learning at two distributed scales to be performed at the same speed as if the learning and all the data were localized in a single data center. That's a significant achievement.
+More importantly, from these results, we observe that Gaia, the orange bars in each of these groups of bars, end up achieving performance in terms of the machine learning time, so how long did it take for the machine learning process to converge and to produce a model that's no longer really updating in significant manner, iteration from iteration, we observe that these orange bars are really close to the gray bars. What this shows is that Gaia allows machine learning at two distributed sites to be performed at the same speed as if the learning and all the data were localized in a single data center. That's a significant achievement.
 
 ## 7. Tradeoffs of Using Global Model
 
+Now, what are some tradeoffs of using a global model?
+
 ![Lesson 15 slide 21: 7. Tradeoffs of Using Global Model](slides/lesson-15/page-21.png)
 
-Now, what are some tradeoffs of using a global model? One thing that Gaia and Google's federated learning have in common, and also the parameter server, is that their goal is to create the best possible global model. A single global model means that there is a single unified model that will be used across the entire system, regardless of location.
+One thing that Gaia and Google's federated learning have in common, and also the parameter server, is that their goal is to create the best possible global model. A single global model means that there is a single unified model that will be used across the entire system, regardless of location.
 
 But a global model is not always needed. There is a lot of locality in the data trends and patterns in different locations. These contexts can be better served by a smaller, more tailored model. Trying to build a good global model is actually much more difficult from the algorithm perspective as well. It has been shown that this leads to overfitting, less accurate models, etc, in these scenarios when the data trends tend to exhibit different properties at the different locations.
 
@@ -110,11 +124,13 @@ Even if there is sufficient data, isolated learning may be suboptimal. There is 
 
 ## 8. Collaborative Learning with Cartel
 
+This motivates us to look at a different approach to support distributed machine learning: collaborative learning.
+
 ![Lesson 15 slide 24: 8. Collaborative Learning with Cartel](slides/lesson-15/page-24.png)
 
-This motivates us to look at a different approach to support distributed machine learning: collaborative learning. In my research group, we developed a system called Cartel, and this enables a new mode of distributed learning called collaborative learning. The first prototype system that supports this type of learning is called Cartel. We developed this with collaborators at Nokia Bell Labs, and published it at the cloud computing symposium in 2019. Cartel has a different goal than these other systems. Its goal is to allow each node to benefit from small customized models. However, when there is a change in the environment or some variations in the workload pattern, Cartel makes it possible for the system to find another node, appear in the distributed system, where similar types of patterns have been observed before, and then to transfer knowledge from those locations.
+In my research group, we developed a system called Cartel, and this enables a new mode of distributed learning called collaborative learning. The first prototype system that supports this type of learning is called Cartel. We developed this with collaborators at Nokia Bell Labs, and published it at the cloud computing symposium in 2019. Cartel has a different goal than these other systems. Its goal is to allow each node to benefit from small customized models. However, when there is a change in the environment or some variations in the workload pattern, Cartel makes it possible for the system to find another node, a peer in the distributed system, where similar types of patterns have been observed before, and then to transfer knowledge from those locations.
 
-What transferring knowledge really means is to perform some form of model update across the two locations. The system level mechanisms that are integrated in Cartel provide support to jump start the process of adapting the model at one location to some of the changes that it observes by making it possible to find the right peer note, and to perform the right type of knowledge transfer. When considering highly distributed system where the strengths of having some locality in the data trends across different locations, and then also having some situations where these trends do propagate from one location to another over time, for such systems, we showed that Cartel is quite superior compared to the other modes of learning. It's able to achieve more lightweight models compared to decentralized approaches. It requires much less data transfer time and leads to lower training time compared to decentralized approaches, and at the same time, it achieves much better model accuracy than learning in isolation.
+What transferring knowledge really means is to perform some form of model update across the two locations. The system level mechanisms that are integrated in Cartel provide support to jump start the process of adapting the model at one location to some of the changes that it observes by making it possible to find the right peer node, and to perform the right type of knowledge transfer. When considering highly distributed system where the strengths of having some locality in the data trends across different locations, and then also having some situations where these trends do propagate from one location to another over time, for such systems, we showed that Cartel is quite superior compared to the other modes of learning. It's able to achieve more lightweight models compared to decentralized approaches. It requires much less data transfer time and leads to lower training time compared to decentralized approaches, and at the same time, it achieves much better model accuracy than learning in isolation.
 
 ![Lesson 15 slide 25: 8. Collaborative Learning with Cartel](slides/lesson-15/page-25.png)
 
@@ -126,7 +142,7 @@ Cartel does rely on a logically, at least, centralized component, metadata servi
 
 To perform learning, each of these nodes receive some number of requests, and then a single batch at a time, it performs a iteration of the learning process using its locally stored model. It dynamically evaluates the quality of the learning, and when it detects a drift, when it detects that the model accuracy drops, that there is some sort of change, it contacts steve metadata server. The metadata server, during regular operation of all of these nodes, aggregates periodically small amount of metadata that tell it something about the classes that are observed at each of the different locations and the accuracies that are experienced in these locations. This is really small amount of data on the order of a few kilobytes, that exchange between these nodes.
 
-This information makes it sufficient for the metadata service to provide a note with some information that helps determine a good peer, a good what we call logical neighbor, they would be able to help with a model update. Once such a peer is identified, then the actual exchange of parameters is going to take place using this knowledge transfer mechanism.
+This information makes it sufficient for the metadata service to provide a node with some information that helps determine a good peer, a good what we call logical neighbor, they would be able to help with a model update. Once such a peer is identified, then the actual exchange of parameters is going to take place using this knowledge transfer mechanism.
 
 ### 8.2. Evaluation
 
@@ -140,9 +156,11 @@ For instance, regarding these specific metrics that we use in the evaluation, we
 
 ## 9. Beyond Geo-Distributed Training
 
+For the most part, in this lesson, we were really focused on the training part of machine learning in geo-distributed scenarios.
+
 ![Lesson 15 slide 29: 9. Beyond Geo-Distributed Training](slides/lesson-15/page-29.png)
 
-For the most part, in this lesson, we were really focused on the training part of machine learning in geo-distributed scenarios. Training is really only one step in the overall machine learning pipeline. There is obviously the phase of the model serving. This is when you can imagine that the model, once it's trained, is used to serve queries about classifications, recommendations, predictions. This is the inference phase, right? And then there are a number of other components in the end-to-end machine learning pipeline, some of which have to do with creating and optimizing the models, others with the data delivery, or the execution of the distributed tensor manipulations.
+Training is really only one step in the overall machine learning pipeline. There is obviously the phase of the model serving. This is when you can imagine that the model, once it's trained, is used to serve queries about classifications, recommendations, predictions. This is the inference phase, right? And then there are a number of other components in the end-to-end machine learning pipeline, some of which have to do with creating and optimizing the models, others with the data delivery, or the execution of the distributed tensor manipulations.
 
 ![Lesson 15 slide 30: 9. Beyond Geo-Distributed Training](slides/lesson-15/page-30.png)
 
@@ -150,6 +168,8 @@ The RISELab at Berkeley developed a system called Ray that integrates all of the
 
 ## 10. Summary
 
+In this lesson, we discussed the challenges and some of the techniques for distributed machine learning.
+
 ![Lesson 15 slide 32: 10. Summary](slides/lesson-15/page-32.png)
 
-In this lesson, we discussed the challenges and some of the techniques for distributed machine learning. We focused on geo-distributed machine learning, and first, we talked about Gaia and its ASP synchronization model that considers approximation. Then, we discussed learning in very decentralized environments with a collaborative peer-to-peer model implemented in the Cartel system, and discussed its benefits. And finally, we provided a very brief mention of the fact that there are many other faces in the end-to-end distributed systems and platforms for machine learning and the importance of distributed systems for all of these other phases of machine learning.
+We focused on geo-distributed machine learning, and first, we talked about Gaia and its ASP synchronization model that considers approximation. Then, we discussed learning in very decentralized environments with a collaborative peer-to-peer model implemented in the Cartel system, and discussed its benefits. And finally, we provided a very brief mention of the fact that there are many other faces in the end-to-end distributed systems and platforms for machine learning and the importance of distributed systems for all of these other phases of machine learning.

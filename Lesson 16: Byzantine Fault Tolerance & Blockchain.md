@@ -4,17 +4,21 @@ Source: [Lesson 16 — Video](https://www.youtube.com/watch?v=Jm-bP8UVKEA)
 
 ## 1. Introduction
 
+In the earlier lessons, we talked about consensus, and gave several examples of consensus algorithms.
+
 ![Lesson 16 slide 2: 1. Introduction](slides/lesson-16/page-02.png)
 
-In the earlier lessons, we talked about consensus, and gave several examples of consensus algorithms. One thing all of those examples had in common was the assumption that all nodes behave properly, and that the only way that they can fail is if a node fail stops, or if the network introduces excessive delays or is partitioned.
+One thing all of those examples had in common was the assumption that all nodes behave properly, and that the only way that they can fail is if a node fail stops, or if the network introduces excessive delays or is partitioned.
 
 While we cover more general security topics in other courses, in this lesson, we will revisit the consensus problem, but in the context of more general modes of failures, called Byzantine failures. We will see what we mean by Byzantine failures, and why they add another layer of complexity to achieving consensus. We will look at a famous paper on practical Byzantine fault tolerance, pBFT, and we will briefly explain the relationship between classical approaches to consensus with Byzantine failures, such as PBFT, and popular blockchain technologies.
 
 ## 2. Byzantine Failure and Byzantine Generals
 
+Let's talk about Byzantine failures and Byzantine generals.
+
 ![Lesson 16 slide 4: 2. Byzantine Failure and Byzantine Generals](slides/lesson-16/page-04.png)
 
-Let's talk about Byzantine failures and Byzantine generals. We said briefly earlier that Byzantine failures are failures where a node in a distributed system continues executing, but starts sending incorrect messages, either for militias or for some arbitrary reasons. The term Byzantine comes from the classical paper, the Byzantine generals problem, which was published in 82, by Leslie Lamport, jointly with Robert Shostak and Marshall Pease.
+We said briefly earlier that Byzantine failures are failures where a node in a distributed system continues executing, but starts sending incorrect messages, either for militias or for some arbitrary reasons. The term Byzantine comes from the classical paper, the Byzantine generals problem, which was published in 82, by Leslie Lamport, jointly with Robert Shostak and Marshall Pease.
 
 ![Lesson 16 slide 5: 2. Byzantine Failure and Byzantine Generals](slides/lesson-16/page-05.png)
 
@@ -30,15 +34,17 @@ The Byzantine generals problem raises the question on how to reach a consensus, 
 
 ## 3. Byzantine Fault Tolerance
 
+So how do we ensure we can tolerate this type of Byzantine failures and achieve consensus?
+
 ![Lesson 16 slide 8: 3. Byzantine Fault Tolerance](slides/lesson-16/page-08.png)
 
-So how do we ensure we can tolerate this type of Byzantine failures and achieve consensus? Remember, our goal is to reach consensus with all the desired properties of safety, aliveness, correctness, in a way that tolerates up to f failures in a distributed system with asynchronous communication. And we want to achieve this even in scenarios when there are Byzantine behaviors.
+Remember, our goal is to reach consensus with all the desired properties of safety, liveness, correctness, in a way that tolerates up to $f$ failures in a distributed system with asynchronous communication. And we want to achieve this even in scenarios when there are Byzantine behaviors.
 
 ![Lesson 16 slide 9: 3. Byzantine Fault Tolerance](slides/lesson-16/page-09.png)
 
 The main idea for how to achieve this can be summarized with these three questions. First, to guard against corrupt messages, we will use cryptographic methods to authenticate the communication endpoints, and secure the communication, and to verify that the messages have not been tampered with.
 
-Second, to guard against scenarios when one or more participants are not behaving properly, we will increase the number of participants in the system in order to tolerate that failures. For a system that needs to tolerate up to f failures, the total number of participants in the distributed consensus algorithm has been proven that it needs to be at least 3 f plus one notes.
+Second, to guard against scenarios when one or more participants are not behaving properly, we will increase the number of participants in the system in order to tolerate that failures. For a system that needs to tolerate up to $f$ failures, the total number of participants in the distributed consensus algorithm has been proven that it needs to be at least $3f+1$ nodes.
 
 Finally, to guard against a scenario when the leader node itself is corrupt and is perhaps sending different nodes different types of messages, we will have to perform additional checks among the participants, to ensure that this is not the case.
 
@@ -46,31 +52,35 @@ As a reminder, FLP will still hold. So with these ideas, the protocol can guaran
 
 ## 4. Practical Byzantine Fault Tolerance: pBFT
 
+All of these ideas come together in PBFT, an algorithm for practically achieving Byzantine fault tolerance.
+
 ![Lesson 16 slide 11: 4. Practical Byzantine Fault Tolerance: pBFT](slides/lesson-16/page-11.png)
 
-All of these ideas come together in PBFT, an algorithm for practically achieving Byzantine fault tolerance. The PBFT algorithm was proposed by Miguel Castro and Barbara Liskov from MIT, and was presented at OSDI in 99. There were proposed algorithms to solve the Byzantine generals problem before, which also presented the proof for the necessary three of one nodes to tolerate at faults. But at the time that it appeared, pBFT, as the algorithm is known, was the first solution that could be used with high performance, capable of processing large number of operations per second.
+The PBFT algorithm was proposed by Miguel Castro and Barbara Liskov from MIT, and was presented at OSDI in 99. There were proposed algorithms to solve the Byzantine generals problem before, which also presented the proof for the necessary three of one nodes to tolerate at faults. But at the time that it appeared, pBFT, as the algorithm is known, was the first solution that could be used with high performance, capable of processing large number of operations per second.
 
 ![Lesson 16 slide 12: 4. Practical Byzantine Fault Tolerance: pBFT](slides/lesson-16/page-12.png)
 
 We'll try to solve the Byzantine problem for a system where a client interacts with a group of servers. These servers will implement some sort of replicated service. The client interacts with these servers, and needs a guarantee that the servers will reach a consensus when replicating the client's updates, or that they will provide responses such that the client, based on the majority of these responses, will be able to determine the correct response.
 
-One of the replicated servers is a leader. The rest are backups, and an arbitrary set of up to f servers may fail. The primary, or the leader node, determines the current view of the system. In the view, and for that reason also, the primary node may change over time. Each replica maintains consistent information about the state of the service, the messages that are exchanged, and the view, or rather, the information about the current node that's the primary. All communication is secure, and the security is cryptographically guaranteed through the use of public key infrastructure, message digest, and similar techniques.
+One of the replicated servers is a leader. The rest are backups, and an arbitrary set of up to $f$ servers may fail. The primary, or the leader node, determines the current view of the system. In the view, and for that reason also, the primary node may change over time. Each replica maintains consistent information about the state of the service, the messages that are exchanged, and the view, or rather, the information about the current node that's the primary. All communication is secure, and the security is cryptographically guaranteed through the use of public key infrastructure, message digest, and similar techniques.
 
 ### 4.1. Why 3f + 1 Nodes?
 
 ![Lesson 16 slide 13: 4. Practical Byzantine Fault Tolerance: pBFT](slides/lesson-16/page-13.png)
 
-So why do we say we need three f plus one nodes to tolerate f faults? To illustrate this simply, let's consider this scenario. We have some total of n nodes in the system. Since the algorithm must tolerate f faults, it needs to be able to reach a decision about the proposal ordering, about the consensus, based on the remaining n minus f notes.
+So why do we say we need $3f+1$ nodes to tolerate $f$ faults? To illustrate this simply, let's consider this scenario. We have some total of $n$ nodes in the system. Since the algorithm must tolerate $f$ faults, it needs to be able to reach a decision about the proposal ordering, about the consensus, based on the remaining $n-f$ nodes.
 
-Now, if we design the algorithm in a way that it's able to make decision once n minus f messages are received, it is possible that the missing f notes were just some notes that that were delayed, and instead, the f Byzantine nodes are actually included in the set n minus f, and are sending some incorrect information. So we have to make sure that among these n minus f notes, even if the f faulty nodes are there, the remaining nodes are going to be some greater number than f, so as to be able to reach a majority quorum, and reach a correct decision.
+Now, if we design the algorithm in a way that it's able to make decision once $n-f$ messages are received, it is possible that the missing $f$ nodes were just some nodes that that were delayed, and instead, the $f$ Byzantine nodes are actually included in the set $n-f$, and are sending some incorrect information. So we have to make sure that among these $n-f$ nodes, even if the $f$ faulty nodes are there, the remaining nodes are going to be some greater number than $f$, so as to be able to reach a majority quorum, and reach a correct decision.
 
-So going from this inequality, n minus f minus f should be greater than f, that gives us that n should be greater than three f, or rather, that n should be at least three f plus one.
+So going from this inequality, $n-f-f>f$, that gives us that $n>3f$, or rather, that $n\ge 3f+1$.
 
 ## 5. pBFT Algorithm
 
+Let's take a look in more detail at the PBFT algorithm.
+
 ![Lesson 16 slide 15: 5. pBFT Algorithm](slides/lesson-16/page-15.png)
 
-Let's take a look in more detail at the PBFT algorithm. The client makes a request to one of the servers, at least the primary, and it ultimately receives a response. Since even the leader can be corrupt, the client can send the request to all the servers, and receive information, receive responses from a number of these servers once the request is processed. Based on the responses that are received, once more than f plus one responses are received that provide the same information, the client will know that it has its correct response.
+The client makes a request to one of the servers, at least the primary, and it ultimately receives a response. Since even the leader can be corrupt, the client can send the request to all the servers, and receive information, receive responses from a number of these servers once the request is processed. Based on the responses that are received, once more than $f+1$ responses are received that provide the same information, the client will know that it has its correct response.
 
 ![Lesson 16 slide 16: 5. pBFT Algorithm](slides/lesson-16/page-16.png)
 
@@ -78,17 +88,17 @@ The request processing protocol executes in three phases: pre-prepare, prepare, 
 
 ![Lesson 16 slide 17: 5. pBFT Algorithm](slides/lesson-16/page-17.png)
 
-When a request is received at the primary, determine based on the view, pick some sequence number, computes the digest of the message, and multicast a pre-prepared request to all of the backup replicas, and also stores this message in a log.
+When a request is received at the primary, determine based on the view, pick some sequence number, computes the digest of the message, and multicast a pre-prepare request to all of the backup replicas, and also stores this message in a log.
 
-Each of the replicas need to check whether they can accept the pre-prepared request. For that, they need to check that the signature and the digest of the message are cryptographically correct. They have to make sure that the view that the message is sent in corresponds to the current view that they are aware of, that the sequence number included in the message is new. And it also makes sure that the sequence number lies between two water marks. The protocol essentially keeps some maximum number of in-flight operations, and if the log is full, then any other new requests will be delayed, will be blocked. And so by performing this check, what's made possible in this manner is to make sure that a faulty primary doesn't just start sending messages with some large sequence number, and in that manner, blocking any other requests from being pushed into the replication service.
+Each of the replicas need to check whether they can accept the pre-prepare request. For that, they need to check that the signature and the digest of the message are cryptographically correct. They have to make sure that the view that the message is sent in corresponds to the current view that they are aware of, that the sequence number included in the message is new. And it also makes sure that the sequence number lies between two water marks. The protocol essentially keeps some maximum number of in-flight operations, and if the log is full, then any other new requests will be delayed, will be blocked. And so by performing this check, what's made possible in this manner is to make sure that a faulty primary doesn't just start sending messages with some large sequence number, and in that manner, blocking any other requests from being pushed into the replication service.
 
 ![Lesson 16 slide 18: 5. pBFT Algorithm](slides/lesson-16/page-18.png)
 
-If a pre-prepared message is accepted, then the replica enters the prepare phase. At that point, it multicasts to all of the other nodes a prepare message, and it also logs that this message has been sent in its own log. Each of the replicas will then wait for two f matching preparer messages to be received from other replicas. It may receive total of more than two f messages. Some of these may be from faulty or Byzantine note, and we'll just ignore those. So we'll really wait for two f matching ones.
+If a pre-prepare message is accepted, then the replica enters the prepare phase. At that point, it multicasts to all of the other nodes a prepare message, and it also logs that this message has been sent in its own log. Each of the replicas will then wait for $2f$ matching prepare messages to be received from other replicas. It may receive total of more than $2f$ messages. Some of these may be from faulty or Byzantine node, and we'll just ignore those. So we'll really wait for $2f$ matching ones.
 
 ![Lesson 16 slide 19: 5. pBFT Algorithm](slides/lesson-16/page-19.png)
 
-Once the prepared stage is complete, a replica enters the commit phase. It sends a commit message to all other replicas, and also logs this message. It then waits to the additional 2f matching commits by evaluating a predicate committed local. Once the request is committed, it can be executed, and a response can be sent to the client.
+Once the prepared stage is complete, a replica enters the commit phase. It sends a commit message to all other replicas, and also logs this message. It then waits for the additional $2f$ matching commits by evaluating a predicate `committed-local`. Once the request is committed, it can be executed, and a response can be sent to the client.
 
 ![Lesson 16 slide 20: 5. pBFT Algorithm](slides/lesson-16/page-20.png)
 
@@ -96,13 +106,15 @@ The paper includes additional detail on the behavior of the PBFT algorithm under
 
 ## 6. Byzantine Consensus vs. Blockchain?
 
+For those of you familiar with blockchain, some aspects of how we describe the solution to the Byzantine consensus problem may remind you of that.
+
 ![Lesson 16 slide 22: 6. Byzantine Consensus vs. Blockchain?](slides/lesson-16/page-22.png)
 
-For those of you familiar with blockchain, some aspects of how we describe the solution to the Byzantine consensus problem may remind you of that. These days, we've seen a continuous growth in the blockchain space, in terms of the amount of wealth that's accumulated and impacted by these technologies, the diverse applications built on top of blockchain, cryptocurrency, smart contracts, and so forth.
+These days, we've seen a continuous growth in the blockchain space, in terms of the amount of wealth that's accumulated and impacted by these technologies, the diverse applications built on top of blockchain, cryptocurrency, smart contracts, and so forth.
 
 ![Lesson 16 slide 23: 6. Byzantine Consensus vs. Blockchain?](slides/lesson-16/page-23.png)
 
-An underlying technology enabling this space is that of a distributed ledger, much like the replicated logs that we needed to keep consistent with Paxos, or rather Multi-Paxos, and PBFT. Distributed ledger is a timestamp sequence of records that is replicated across distributed machines in a consistent, agreed-upon manner. Each node agrees precisely on the order and on the content of the ledger entries, just like with the logs, regardless of failures. In that sense, it encodes the execution of a series of updates or transactions, in their entire history.
+An underlying technology enabling this space is that of a distributed ledger, much like the replicated logs that we needed to keep consistent with Paxos, or rather Multi-Paxos, and PBFT. Distributed ledger is a timestamped sequence of records that is replicated across distributed machines in a consistent, agreed-upon manner. Each node agrees precisely on the order and on the content of the ledger entries, just like with the logs, regardless of failures. In that sense, it encodes the execution of a series of updates or transactions, in their entire history.
 
 Moreover, the ledger must be unique and unchanged, even if some participants in the system try to make changes, or to create an alternative view of the history. And it must achieve that without introducing some centralized clearinghouse for reaching agreements.
 
@@ -112,7 +124,7 @@ Moreover, the ledger must be unique and unchanged, even if some participants in 
 
 So can we build a blockchain, such as the Bitcoin exchange, using PBFT? PBFT has some nice properties. Above all, it allows us to achieve consensus in a decentralized manner. And unlike Paxos alone, it is able to do it even when dealing with Byzantine failures, and with unreliable networks.
 
-However, one key requirement for PBFT is that there is a relationship between the number of faulty nodes in the system and the number of total nodes in the system. Considering the use of Bitcoin, for instance, these values cannot be known a priori. An attacker can create also many faulty instances of themselves. And even if there were a way to put a bound on f and to determine n, the number of messages exchanged or required for PBFT are cubic with respect to number of participants, and that can be quite costly.
+However, one key requirement for PBFT is that there is a relationship between the number of faulty nodes in the system and the number of total nodes in the system. Considering the use of Bitcoin, for instance, these values cannot be known a priori. An attacker can create also many faulty instances of themselves. And even if there were a way to put a bound on $f$ and to determine $n$, the number of messages exchanged or required for PBFT are cubic with respect to number of participants, and that can be quite costly.
 
 ![Lesson 16 slide 25: 6. Byzantine Consensus vs. Blockchain?](slides/lesson-16/page-25.png)
 
@@ -128,9 +140,11 @@ Interestingly, the famous Bitcoin white paper by Satoshi Nakamoto, which introdu
 
 ## 7. How to Learn More
 
+Well, research and improvements on Byzantine fault tolerant protocols never really stopped.
+
 ![Lesson 16 slide 27: 7. How to Learn More](slides/lesson-16/page-27.png)
 
-Well, research and improvements on Byzantine fault tolerant protocols never really stopped. The growing popularity of blockchain has inspired a lot more recent work. By now, there are countless academic papers, thesis, dissertation, and even more white papers and different blockchain designs. As I'm recording this lesson, Google Scholar alone reported close to a quarter million articles related to blockchain.
+The growing popularity of blockchain has inspired a lot more recent work. By now, there are countless academic papers, thesis, dissertation, and even more white papers and different blockchain designs. As I'm recording this lesson, Google Scholar alone reported close to a quarter million articles related to blockchain.
 
 The details of specific distributed ledger solutions vary with respect to a number of features or design goals, regarding performance, trust assumptions, etc. For instance, very obvious differences exist among permissionless solutions, are meant to be fully decentralized, versus permissioned ones, when there is some subset of trusted parties.
 
@@ -144,6 +158,8 @@ James, whose career so far includes distributed systems research as part of Micr
 
 ## 8. Summary
 
+In summary, in this lesson, we talked about solutions that allow distributed systems to deal with Byzantine failures.
+
 ![Lesson 16 slide 30: 8. Summary](slides/lesson-16/page-30.png)
 
-In summary, in this lesson, we talked about solutions that allow distributed systems to deal with Byzantine failures. We described what are Byzantine failures and introduce the Byzantine general problem. We described the PBFT algorithm for practical Byzantine fault tolerance for systems with less than a third faulty nodes. And we briefly made some connections between Byzantine fault tolerant work from the distributed computing academic and research community and the more recent work on distributed ledger technologies and blockchain.
+We described what are Byzantine failures and introduce the Byzantine general problem. We described the PBFT algorithm for practical Byzantine fault tolerance for systems with less than a third faulty nodes. And we briefly made some connections between Byzantine fault tolerant work from the distributed computing academic and research community and the more recent work on distributed ledger technologies and blockchain.

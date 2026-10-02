@@ -4,9 +4,11 @@ Source: [Lesson 13 — Video](https://www.youtube.com/watch?v=gG50KoxiHE4)
 
 ## 1. Introduction
 
+In this lesson, we will discuss several trends from data center systems which have implications on the design of distributed services and applications.
+
 ![Lesson 13 slide 2: 1. Introduction](slides/lesson-13/page-02.png)
 
-In this lesson, we will discuss several trends from data center systems which have implications on the design of distributed services and applications. We routinely rely on applications which are powered by data center platforms and services. All of these data center-based services are still distributed systems. There are some unique trends that have been present in modern data centers that make certain design points to be more relevant. In this lesson, we will look at some of them.
+We routinely rely on applications which are powered by data center platforms and services. All of these data center-based services are still distributed systems. There are some unique trends that have been present in modern data centers that make certain design points to be more relevant. In this lesson, we will look at some of them.
 
 One relevant trend is the presence of high-end interconnect networks, such as InfiniBand, with RDMA capabilities. Another trend is that of increasing resource heterogeneity. This comes in the form of heterogeneity of the compute resources, such as the presence of accelerators, such as GPUs, TPUs, which are becoming popular for AI workloads. Programmable circuits in the forms of FPGAs, which are also integrated in the high-end network elements, such as NICs and routers or switches.
 
@@ -14,9 +16,11 @@ In this lesson, we'll talk in more detail about heterogeneity which is emerging 
 
 ## 2. Datacenter Trends
 
+Let's talk about data center trends.
+
 ![Lesson 13 slide 4: 2. Datacenter Trends](slides/lesson-13/page-04.png)
 
-Let's talk about data center trends. You have probably heard many times the statement that Moore's law is coming to an end. Gordon Moore is one of the co-founders of Intel corporation. In 75, he made an observation about the improvements in the chip transistor density, which resulted in increase in performance, and he stated that it follows a doubling trend every year and a half. The observation is referred to as Moore's law, and although it's not actually a law grounded in physics, for a while, it proved to be incredibly accurate.
+You have probably heard many times the statement that Moore's law is coming to an end. Gordon Moore is one of the co-founders of Intel corporation. In 75, he made an observation about the improvements in the chip transistor density, which resulted in increase in performance, and he stated that it follows a doubling trend every year and a half. The observation is referred to as Moore's law, and although it's not actually a law grounded in physics, for a while, it proved to be incredibly accurate.
 
 The implication of Moore's law, in a way, was that if software did nothing to create some improvements, it would still have been okay, since performance would have doubled if you just waited long enough. The strength, combined with the fact that as you increase production, the price reduces, or so-called the law of economy of scale, meant that if you need to achieve high performance in a cost efficient manner and at large scales, the best strategy is to use commodity components. Their cost would be best. They'll be backward compatible, and with Moore's law, their performance will keep increasing.
 
@@ -32,9 +36,9 @@ The specialization means that there is not a single commodity component, but man
 
 Here are some examples of the kinds of technologies that have found their way in modern data centers, in part, motivated by the limitations that traditional commodity hardware, such as x86 CPUs, DRAM, and Ethernet networks, have started to experience. In part, because of the changes in the requirements and scale of the workloads. We'll talk about the implications of some of these trends.
 
-One example is the presence of high-speed interconnect and interconnects with support for remote direct memory access. This enables support for new types of shared memory access across distinct physical notes. Mellanox is a premier provider of high-speed interconnect, and was recently acquired by Nvidia. There are several offerings today of network processing elements, such as NICs and routers and switches, that have some integrated programmable CPU. This makes these interconnects programmable. Mellanox and Intel both have some types of products that offer some programmability at the network interface level. You can imagine, with such programmability, you can move common tasks, Paxos for instance, in the network itself.
+One example is the presence of high-speed interconnect and interconnects with support for remote direct memory access. This enables support for new types of shared memory access across distinct physical nodes. Mellanox is a premier provider of high-speed interconnect, and was recently acquired by Nvidia. There are several offerings today of network processing elements, such as NICs and routers and switches, that have some integrated programmable CPU. This makes these interconnects programmable. Mellanox and Intel both have some types of products that offer some programmability at the network interface level. You can imagine, with such programmability, you can move common tasks, Paxos for instance, in the network itself.
 
-I mentioned the merging editor generating the memory and storage stack, and the prime example of that is the emergence of persistent memories, memories that are accessible in a byte-addressable manner, like DRAM, but are persistent, like storage devices. Intel Optane is one example of that, and it's based on 3d crosspoint technology that Intel and Micron developed together.
+I mentioned the emerging heterogeneity in the memory and storage stack, and the prime example of that is the emergence of persistent memories, memories that are accessible in a byte-addressable manner, like DRAM, but are persistent, like storage devices. Intel Optane is one example of that, and it's based on 3d crosspoint technology that Intel and Micron developed together.
 
 There is an increasing presence of specialized accelerators. Nvidia's GPUs have been very popular for over a decade at this point. Google, a number of years ago, developed the tensor processing units, specifically designed for air workloads. And these accelerators have implications on how we perform resource management, load balancing, scheduling, and so forth, in data centers.
 
@@ -44,15 +48,17 @@ In this lesson, we will talk in a little bit more detail on the implications of 
 
 ## 3. What is RDMA?
 
+We'll start by talking about the impact of capabilities of modern interconnect networks.
+
 ![Lesson 13 slide 7: 3. What is RDMA?](slides/lesson-13/page-07.png)
 
-We'll start by talking about the impact of capabilities of modern interconnect networks. RDMA stands for remote direct memory access. As the name suggests, a network with RDMA capabilities will make it possible to provide DMA benefits when accessing data on a remote node. Let's remind ourselves here that the benefits of using DMA support is that this specialized DMA engine is involved in moving data among the host and the network, and the host CPU doesn't have to copy the data from one location to the other.
+RDMA stands for remote direct memory access. As the name suggests, a network with RDMA capabilities will make it possible to provide DMA benefits when accessing data on a remote node. Let's remind ourselves here that the benefits of using DMA support is that this specialized DMA engine is involved in moving data among the host and the network, and the host CPU doesn't have to copy the data from one location to the other.
 
 In interconnect with RDMA support, this ability to bypass the CPU is made possible via capabilities that are included in the network adapters, or the NICs, and also the protocols that are used by the endpoints of this interconnect. The specialized protocols and NIC designs have resulted in a higher bandwidth and lower latency on these types of interconnect compared to commodity Ethernet networks. For instance, at the same time when you can achieve sub-microsecond memory to memory latency on some of these high-end networks, on a comparable Ethernet network, that would be an approximately order of magnitude slower.
 
 The downside is that this typically comes at a higher cost. So although the cost of the network adapters themselves has gone down over the years, the cabling and the switches are still more expensive, leading to an overall higher cost per port. The idea for these technologies comes from research systems that date back in the 90s, and then it was a little bit more formalized through the virtual interconnect association in the early 2000s.
 
-In terms of InfiniBand specifically, a number of vendors emerged in the early 2000s, but mellanox emerged as a leader with respect to the InfiniBand interconnect. Today, about one half of the top 500 machines and major data centers run RDMA InfiniBand networks. But RDMA is not exclusively an InfiniBand feature. It is supported on other interconnects as well. In data centers, there are Ethernet adapters with RDMA capabilities, and these are part of so-called rocky designs, RDMA over converged Ethernet. There are also other products and protocols: iwarp, which stands for internet wide area RDMA protocol. Portals, which is primarily used in the hpc systems. There are some of the older crane interconnects also, gemini, arias, and so forth.
+In terms of InfiniBand specifically, a number of vendors emerged in the early 2000s, but mellanox emerged as a leader with respect to the InfiniBand interconnect. Today, about one half of the top 500 machines and major data centers run RDMA InfiniBand networks. But RDMA is not exclusively an InfiniBand feature. It is supported on other interconnects as well. In data centers, there are Ethernet adapters with RDMA capabilities, and these are part of so-called rocky designs, RDMA over converged Ethernet. There are also other products and protocols: iwarp, which stands for internet wide area RDMA protocol. Portals, which is primarily used in the hpc systems. There are some of the older Cray interconnects also, Gemini, Aries, and so forth.
 
 ### 3.1. Two-Sided and One-Sided Communication
 
@@ -68,9 +74,11 @@ Now, I'm showing the RDMA operations is going directly to the destination memory
 
 ## 4. RDMA-Specialized RPC
 
+RDMA networks are gaining in popularity in data centers, but data center applications and services interact using RPCs.
+
 ![Lesson 13 slide 11: 4. RDMA-Specialized RPC](slides/lesson-13/page-11.png)
 
-RDMA networks are gaining in popularity in data centers, but data center applications and services interact using RPCs. Given the different communication modes in which RDMA can be used, an obvious question is: which one of these should one choose, in particular, when trying to implement RPCs? An initial intuition may be to use the one-sided mode, which provides a unique advantage in RDMA fabrics of not requiring the remote machine to be involved in the processing. However, an RPC often requires some invocation of a remote service too. In the one-sided mode, that service still needs to get executed, which means there may be multiple RTTs over the network required to perform the service invocation, or the service application needs to be redesigned in some manner.
+Given the different communication modes in which RDMA can be used, an obvious question is: which one of these should one choose, in particular, when trying to implement RPCs? An initial intuition may be to use the one-sided mode, which provides a unique advantage in RDMA fabrics of not requiring the remote machine to be involved in the processing. However, an RPC often requires some invocation of a remote service too. In the one-sided mode, that service still needs to get executed, which means there may be multiple RTTs over the network required to perform the service invocation, or the service application needs to be redesigned in some manner.
 
 In the two-sided mode, the remote CPU is invoked, but the end-to-end remote service implication can be achieved with a single RTT, which may be favorable in many cases. And again, there is the benefit here of having a faster network to begin with.
 
@@ -84,9 +92,11 @@ One implementation of RPC that combines some of these features is FaSST, which s
 
 ## 5. What if Memory is Persistent?
 
+Now, what if the destination memory is persistent?
+
 ![Lesson 13 slide 14: 5. What if Memory is Persistent?](slides/lesson-13/page-14.png)
 
-Now, what if the destination memory is persistent? For the longest time, we have differentiated memory and storage by storage being persistent, block addressable, large capacity, and fairly slow, and memory, such as DRAM, being byte-addressable, volatile, so non-durable, much orders of magnitude faster, and smaller capacity.
+For the longest time, we have differentiated memory and storage by storage being persistent, block addressable, large capacity, and fairly slow, and memory, such as DRAM, being byte-addressable, volatile, so non-durable, much orders of magnitude faster, and smaller capacity.
 
 However, for a very long time, we have been looking for ways to achieve so-called persistent memory, something that is byte-addressable, in a way similar to DRAM, that has a performance point in terms of latency and bandwidth that's closer to DRAM, but that is also persistent, just like storage technologies, and that can scale to larger capacity. A simplest design point for this type of persistent memory is to essentially add battery to DRAM.
 
@@ -108,9 +118,11 @@ In that sense, the use of persistent memory sort of removes some advantage of us
 
 ## 6. Disaggregation
 
+Let's take a look at another trend that's gaining popularity in data centers.
+
 ![Lesson 13 slide 19: 6. Disaggregation](slides/lesson-13/page-19.png)
 
-Let's take a look at another trend that's gaining popularity in data centers. We mentioned already that there are different types of memory components in data centers: non-volatile memory, NVMs, and drams. If we look at the compute, there are CPUs, but also many other types of computational elements in the form of specialized accelerators: GPU, TPUs, tensor processing units, programmable FPGAs. There are also different decisions that one can make about the storage types of devices, there are capacities. The question is then, how to choose the configuration of the servers when putting together all of these components in different types of server configurations in data centers? The insert clearly is going to depend on the workload. However, the workloads change. The exhibit differences in the amount of one versus the other resource type they require. Over time, these things change.
+We mentioned already that there are different types of memory components in data centers: non-volatile memory, NVMs, and drams. If we look at the compute, there are CPUs, but also many other types of computational elements in the form of specialized accelerators: GPU, TPUs, tensor processing units, programmable FPGAs. There are also different decisions that one can make about the storage types of devices, there are capacities. The question is then, how to choose the configuration of the servers when putting together all of these components in different types of server configurations in data centers? The insert clearly is going to depend on the workload. However, the workloads change. The exhibit differences in the amount of one versus the other resource type they require. Over time, these things change.
 
 If we end up going ahead with monolithic server configurations, we're going to end up with something that's not flexible. It cannot be elastically scaled with respect to individual resource components. In addition, different workload components may need different amounts of different resources. Trying to design for the worst case will lead to imbalances and major resource inefficiencies.
 
@@ -122,15 +134,19 @@ As an idea, this is not a brand new idea, but it's made possible now because of 
 
 ## 7. Systems Software in Disaggregated Systems?
 
+So what does the system software stack look like in such a disaggregated system?
+
 ![Lesson 13 slide 22: 7. Systems Software in Disaggregated Systems?](slides/lesson-13/page-22.png)
 
-So what does the system software stack look like in such a disaggregated system? Traditional operating system stacks include different subsystems, each responsible for different types of resources. If the resources are now disaggregated, the same should be the case with the corresponding OS components. This creates a new type of distributed operating system design which has not been represented in prior OS designs.
+Traditional operating system stacks include different subsystems, each responsible for different types of resources. If the resources are now disaggregated, the same should be the case with the corresponding OS components. This creates a new type of distributed operating system design which has not been represented in prior OS designs.
 
 ## 8. LegoOS Approach
 
+One proposal on how to achieve such a disaggregated operating system is the approach taken in LegoOS.
+
 ![Lesson 13 slide 24: 8. LegoOS Approach](slides/lesson-13/page-24.png)
 
-One proposal on how to achieve such a disaggregated operating system is the approach taken in LegoOS. LegoOS is a proposal for a disaggregated operating system, first presented in a paper LegoOS disseminated distributed OS for hardware resource disaggregation. And this paper won the best paper award at OSDI in 2018. If we look at the illustration here, this is an illustration of a traditional operating system, whether a monolithic or a microkernel design. In this case, the operating system is responsible for all of the hardware resources, and then uses a network to communicate with other similar configurations of servers and operating systems, where again, the OS is going to be responsible for all of the hardware resources on that node.
+LegoOS is a proposal for a disaggregated operating system, first presented in a paper LegoOS disseminated distributed OS for hardware resource disaggregation. And this paper won the best paper award at OSDI in 2018. If we look at the illustration here, this is an illustration of a traditional operating system, whether a monolithic or a microkernel design. In this case, the operating system is responsible for all of the hardware resources, and then uses a network to communicate with other similar configurations of servers and operating systems, where again, the OS is going to be responsible for all of the hardware resources on that node.
 
 ![Lesson 13 slide 25: 8. LegoOS Approach](slides/lesson-13/page-25.png)
 
@@ -152,9 +168,11 @@ We're going to split the OS functionality into different monitors, and we're goi
 
 ## 9. Disaggregating CPU and Memory with LegoOS
 
+Let us look at a concrete example of disaggregating CPU and memory resources in LegoOS.
+
 ![Lesson 13 slide 29: 9. Disaggregating CPU and Memory with LegoOS](slides/lesson-13/page-29.png)
 
-Let us look at a concrete example of disaggregating CPU and memory resources in LegoOS. We will use again an animation used by the authors during their OSDI presentation. So here is what cp and memory resources look like in a traditional monolithic system.
+We will use again an animation used by the authors during their OSDI presentation. So here is what cp and memory resources look like in a traditional monolithic system.
 
 ![Lesson 13 slide 30: 9. Disaggregating CPU and Memory with LegoOS](slides/lesson-13/page-30.png)
 
@@ -186,13 +204,15 @@ In order to hide this latency, we're going to add an extended cache, and associa
 
 ![Lesson 13 slide 37: 9. Disaggregating CPU and Memory with LegoOS](slides/lesson-13/page-37.png)
 
-This can be in the form of adding a large traditional SRAM caches, but SRAM is expensive, so it even makes sense to add a little bit more local memory, such as some amount of DRAM, or some amount of high bandwidth memory. The authors call this the extended cache, or the x cache. It can be managed exclusively by software, or with some hardware assistance, and it will correspond to an inclusive cache, which again, is also going to be accessed via virtual addresses.
+This can be in the form of adding a large traditional SRAM caches, but SRAM is expensive, so it even makes sense to add a little bit more local memory, such as some amount of DRAM, or some amount of high bandwidth memory. The authors call this the extended cache, or the ExCache. It can be managed exclusively by software, or with some hardware assistance, and it will correspond to an inclusive cache, which again, is also going to be accessed via virtual addresses.
 
 ## 10. LegoOS Select Experimental Result
 
+So what's the implication of the design decision in LegoOS?
+
 ![Lesson 13 slide 39: 10. LegoOS Select Experimental Result](slides/lesson-13/page-39.png)
 
-So what's the implication of the design decision in LegoOS? To evaluate their proposed ideas, they built a prototype. And in the prototype, they used emulation to evaluate it, because after all, they didn't have a full system of different disaggregated types of resources that they could put together in a totally network-attached manner.
+To evaluate their proposed ideas, they built a prototype. And in the prototype, they used emulation to evaluate it, because after all, they didn't have a full system of different disaggregated types of resources that they could put together in a totally network-attached manner.
 
 So what they did, they used a collection of monolithic servers, but at each of the servers, they only use certain types of resources, and the other resources were ignored. And then, the various controllers, the monitors responsible for the select resources, they were implemented using the corresponding kernel modules in Linux. All of this was connected via an RDMA network, and the interactions were performed via fast RPCs over RDMA.
 
@@ -202,7 +222,7 @@ These new interconnect standards, they're backed by different consortia that inv
 
 ![Lesson 13 slide 40: 10. LegoOS Select Experimental Result](slides/lesson-13/page-40.png)
 
-The entire LegoOS implementation, as a prototype implementation, i mentioned already, it is based on different existing Linux components, and it relies on over 100 common Linux system calls, and includes over 200 000 lines of code. In terms of the x cache, the x cache is implemented by using a dedicated portion of DRAM, and any cache misses are managed fully in software. The machine that's implementing the memory resource uses all of the available DRAM memory, but only a small number of CPU resources, and just running kernel space functionality for the memory monitor. Similarly, the storage and all of the other global monitors are implemented in a similar way, but by essentially not using all of the resources on some of the server components. And then, the network, the RPC stack that's used in the implementation of LegoOS, is based on prior implementation of RPC over RDMA by the same group.
+The entire LegoOS implementation, as a prototype implementation, i mentioned already, it is based on different existing Linux components, and it relies on over 100 common Linux system calls, and includes over 200 000 lines of code. In terms of the ExCache, the ExCache is implemented by using a dedicated portion of DRAM, and any cache misses are managed fully in software. The machine that's implementing the memory resource uses all of the available DRAM memory, but only a small number of CPU resources, and just running kernel space functionality for the memory monitor. Similarly, the storage and all of the other global monitors are implemented in a similar way, but by essentially not using all of the resources on some of the server components. And then, the network, the RPC stack that's used in the implementation of LegoOS, is based on prior implementation of RPC over RDMA by the same group.
 
 ### 10.1. Comparison with Swapping-Based Systems
 

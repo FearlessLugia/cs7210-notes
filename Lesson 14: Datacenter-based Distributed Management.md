@@ -4,9 +4,11 @@ Source: [Lesson 14 — Video](https://www.youtube.com/watch?v=K9yfJDOHeik)
 
 ## 1. Management Stack in Datacenters
 
+Let's consider what the overall management stack in a data center looks like.
+
 ![Lesson 14 slide 2: 1. Management Stack in Datacenters](slides/lesson-14/page-02.png)
 
-Let's consider what the overall management stack in a data center looks like. Data centers contain racks of server components, thousands of them. Sound will be server components with some compute and memory and our local storage. Others will be maybe specialized storage servers. Others may be specialized for certain types of workloads, such as for AI these days, and these will have many accelerators, such as GPUs, per node. At the level of the hyperscalers, such as Google, Amazon, Facebook, and others, the size of these systems is tremendous, and it's growing exponentially all the time. So we have a daunting management task in these settings.
+Data centers contain racks of server components, thousands of them. Some will be server components with some compute and memory and local storage. Others will be maybe specialized storage servers. Others may be specialized for certain types of workloads, such as for AI these days, and these will have many accelerators, such as GPUs, per node. At the level of the hyperscalers, such as Google, Amazon, Facebook, and others, the size of these systems is tremendous, and it's growing exponentially all the time. So we have a daunting management task in these settings.
 
 ![Lesson 14 slide 3: 1. Management Stack in Datacenters](slides/lesson-14/page-03.png)
 
@@ -24,9 +26,11 @@ The ultimate goal is to meet the service level objectives, or SLOs. This specifi
 
 ## 2. Datacenter Management at Scale
 
+We need to perform these management tasks at scale, so let's look at a concrete example of the management infrastructure that actually achieves this.
+
 ![Lesson 14 slide 5: 2. Datacenter Management at Scale](slides/lesson-14/page-05.png)
 
-We need to perform these management tasks at scale, so let's look at a concrete example of the management infrastructure that actually achieves this. We will discuss this via the paper on the Borg resource manager, which was developed and originally used at Google. It was presented at the EuroSys conference in 2013. Borg was a follow-on on an earlier resource manager omega, which was also used at Google, and coincidentally, was also presented at EuroSys a couple of years earlier. But the important thing to know about Borg is that it forms the basis for what is today Kubernetes. And Kubernetes is one of the most widely used orchestrators in containerized data centers today.
+We will discuss this via the paper on the Borg resource manager, which was developed and originally used at Google. It was presented at the EuroSys conference in 2013. Borg was a follow-on on an earlier resource manager omega, which was also used at Google, and coincidentally, was also presented at EuroSys a couple of years earlier. But the important thing to know about Borg is that it forms the basis for what is today Kubernetes. And Kubernetes is one of the most widely used orchestrators in containerized data centers today.
 
 ![Lesson 14 slide 6: 2. Datacenter Management at Scale](slides/lesson-14/page-06.png)
 
@@ -40,15 +44,17 @@ This is the flow of a task in a system. When a task is submitted, provided that 
 
 ## 3. Overview of Borg Operations
 
+Let's look at what happens when Borg needs to make scheduling decisions.
+
 ![Lesson 14 slide 9: 3. Overview of Borg Operations](slides/lesson-14/page-09.png)
 
-Let's look at what happens when work needs to make scheduling decisions. This is the overall architecture of a Borg cell.
+This is the overall architecture of a Borg cell.
 
 ![Lesson 14 slide 10: 3. Overview of Borg Operations](slides/lesson-14/page-10.png)
 
 The Borg master, it's like the brain of the Borg system. There is one Borgmaster per cell, and it's going to handle all of the client requests for executing jobs, for checking the status of the jobs. The clients will interact with it via RPC messages. The Borg master maintains the state of the entire cell in memory, so you can already get us some flavor that this is going to present some limitation on how we can scale a single cell.
 
-The scheduler determines what are the jobs that can be admitted and assigned to the pending queue. If a job in some way exceeds its quota of resources, it is not going to be included. It's going to be removed from the pending queue, or otherwise, it's not going to be admitted. And the actual assignment of these resource quotas, that's orthogonal to work. That happens outside of work. It makes the actual assignment of tasks to the different machines, and it monitors the state of all of the machines in the cell. The actual task assignment is going to be done based on scheduler logic that does include information about the state.
+The scheduler determines what are the jobs that can be admitted and assigned to the pending queue. If a job in some way exceeds its quota of resources, it is not going to be included. It's going to be removed from the pending queue, or otherwise, it's not going to be admitted. And the actual assignment of these resource quotas, that's orthogonal to Borg. That happens outside of Borg. It makes the actual assignment of tasks to the different machines, and it monitors the state of all of the machines in the cell. The actual task assignment is going to be done based on scheduler logic that does include information about the state.
 
 ![Lesson 14 slide 11: 3. Overview of Borg Operations](slides/lesson-14/page-11.png)
 
@@ -62,11 +68,11 @@ And then, we have the Borglet component. The Borglet is like a local Borg agent 
 
 ## 4. Achieving Scalability
 
-![Lesson 14 slide 14: 4. Achieving Scalability](slides/lesson-14/page-14.png)
-
 So let's now highlight specifically what are the mechanisms in this Borg architecture that contribute to the scalability of the design.
 
-To ensure the reliability of the Borg master, since this entity is key for the performance of Borg, the Borg master itself, it's replicated. The paper states that it is replicated five times. One of the replicas serves as a master, and the master is determined using the Chubby log, which is kind of like Google's version of Zookeeper, but basically, it's decided based on some consensus algorithm. And so this is how all the replicas agree on who is the leader. Only the node mutates the actual state of the cell. This makes it possible to perform these updates quickly without having to actually acquire locks among all of the replicas.
+![Lesson 14 slide 14: 4. Achieving Scalability](slides/lesson-14/page-14.png)
+
+To ensure the reliability of the Borg master, since this entity is key for the performance of Borg, the Borg master itself, it's replicated. The paper states that it is replicated five times. One of the replicas serves as a master, and the master is determined using the Chubby lock, which is kind of like Google's version of Zookeeper, but basically, it's decided based on some consensus algorithm. And so this is how all the replicas agree on who is the leader. Only the node mutates the actual state of the cell. This makes it possible to perform these updates quickly without having to actually acquire locks among all of the replicas.
 
 The elected master also serves as a leader for writing to the Paxos store. Each replica saves the state of a cell by relying on a Paxos-based store as well, and there is a failover that's possible to achieve among the replicas in under 10 seconds based on the results that they publish in the paper.
 
@@ -76,7 +82,7 @@ The system incorporates a number of heuristics that are designed so as to both l
 
 ![Lesson 14 slide 16: 4. Achieving Scalability](slides/lesson-14/page-16.png)
 
-Another important decision made in work is to decouple the process of running the scheduler logics that makes recommendations about the task assignments, from the actual scheduling of the precise resources to a given task. This opens up opportunities for much more asynchrony among the different steps of when the different queues and different statistics are updated, read, and so forth, and also makes it easier to integrate different types of schedulers. One interesting piece of work, for instance, is a paper that was published at urasis in 2017, tetris sketch, that introduces programming constructs that would let tasks describe their different requirements for heterogeneous types of resources. And then using these programmer constructs and some linear integer programming, ultimately, you produce a schedule, an allocation of resources, that gives you some strong guarantees regarding the performance that you can achieve.
+Another important decision made in Borg is to decouple the process of running the scheduler logics that makes recommendations about the task assignments, from the actual scheduling of the precise resources to a given task. This opens up opportunities for much more asynchrony among the different steps of when the different queues and different statistics are updated, read, and so forth, and also makes it easier to integrate different types of schedulers. One interesting piece of work, for instance, is a paper that was published at EuroSys in 2017, TetriSched, that introduces programming constructs that would let tasks describe their different requirements for heterogeneous types of resources. And then using these programmer constructs and some linear integer programming, ultimately, you produce a schedule, an allocation of resources, that gives you some strong guarantees regarding the performance that you can achieve.
 
 Other decisions integrated in the system relate to introducing some communication optimizations. For instance, the Borg master uses designated threads that perform read-only RPCs when they talk to the poor clot. And then, it also uses these shards, these link shards shown in the picture, which essentially represents some summarized form of the information that's collected from the bore glass. The number of bore glass here is really just a small fraction of the total number of bore gluts that would be under a single master node, so it's important to be able to synthesize this information that's then used in scheduling in a compact way.
 
@@ -86,7 +92,7 @@ And there's some additional optimizations around how the scoring of machines and
 
 ![Lesson 14 slide 17: 4. Achieving Scalability](slides/lesson-14/page-17.png)
 
-So here are some of the optimizations made around the scheduler specifically. So we mentioned that it uses scores in order to determine good candidates for machines that a task should be scheduled on. But there is an opportunity to simply cash those scores for periods of times, and not to recompute it continuously. There is an opportunity to create equivalence classes, either among the sets of tasks that have identical requirements, or sets of resources that exhibit identical or very similar properties. And then, there are some opportunities to actually get benefits from some randomization. So the scoring and filtering of the tasks can sometimes lead to situations where certain machines are in a way prioritized all the time. And sometimes, it's good to introduce some randomness and to opportunistically discover some resources that maybe are actually quite good. Just because we haven't used them for the specific task in some of the previous cycles, that may not be that obvious.
+So here are some of the optimizations made around the scheduler specifically. So we mentioned that it uses scores in order to determine good candidates for machines that a task should be scheduled on. But there is an opportunity to simply cache those scores for periods of times, and not to recompute it continuously. There is an opportunity to create equivalence classes, either among the sets of tasks that have identical requirements, or sets of resources that exhibit identical or very similar properties. And then, there are some opportunities to actually get benefits from some randomization. So the scoring and filtering of the tasks can sometimes lead to situations where certain machines are in a way prioritized all the time. And sometimes, it's good to introduce some randomness and to opportunistically discover some resources that maybe are actually quite good. Just because we haven't used them for the specific task in some of the previous cycles, that may not be that obvious.
 
 ![Lesson 14 slide 18: 4. Achieving Scalability](slides/lesson-14/page-18.png)
 
@@ -96,9 +102,11 @@ But then, some resources are not compressible. And in the case of Borg, that ref
 
 ## 5. Experimental Results
 
+So let's look at a few results from the experimental evaluation of Borg in the paper.
+
 ![Lesson 14 slide 20: 5. Experimental Results](slides/lesson-14/page-20.png)
 
-So let's look at a few results from the experimental evaluation of Borg in the paper. The paper presents several different experiments. We pick one of them to highlight one of the benefits from Borg. So one decision made in Borg was to share the underlying resources by the different types of workloads, the high priority services and the low priority batching jobs. The first decision they explore is whether this decision leads to better resource efficiency when compared to a configuration where the hardware resources are segregated and then designated to host either high priority or batch workloads.
+The paper presents several different experiments. We pick one of them to highlight one of the benefits from Borg. So one decision made in Borg was to share the underlying resources by the different types of workloads, the high priority services and the low priority batching jobs. The first decision they explore is whether this decision leads to better resource efficiency when compared to a configuration where the hardware resources are segregated and then designated to host either high priority or batch workloads.
 
 They take a look at workload traces from a production cluster, and then they replay them in an emulated scenario, in a configuration with and without resource pooling. And then, they measure how many extra machines would they require if they were to run the workload in a segregated configuration. They call this overhead from segregation, and they find this to be anywhere from 20 to upward of 150 percent. More machines would be required. So the polling decision that they made leads to being able to execute the same workload with fewer machines.
 
@@ -108,13 +116,15 @@ Clearly, polling resources and sharing them to serve different types of workload
 
 ![Lesson 14 slide 22: 5. Experimental Results](slides/lesson-14/page-22.png)
 
-The paper includes many more detailed experiments showing the benefit of different decisions in work, and its impact on improved resource efficiency. And one important thing to note, that at the scale of the data centers such as the ones at Google, even the small gain in efficiency can have huge impact in terms of dollars, in terms of watts, in terms of a number of metrics, when you consider the sizes of these systems.
+The paper includes many more detailed experiments showing the benefit of different decisions in Borg, and its impact on improved resource efficiency. And one important thing to note, that at the scale of the data centers such as the ones at Google, even the small gain in efficiency can have huge impact in terms of dollars, in terms of watts, in terms of a number of metrics, when you consider the sizes of these systems.
 
 ## 6. Summary
 
+In this lesson, we looked at different topics related to data center systems.
+
 ![Lesson 14 slide 24: 6. Summary](slides/lesson-14/page-24.png)
 
-In this lesson, we looked at different topics related to data center systems. We talked about the fact that the emergence of different hardware technologies has implications on the design of even basic data center mechanisms. We said that even the implementations of something like rpc would need to be reconsidered when using some of the newer types of interconnect technologies, or some of the new types of persistent memories.
+We talked about the fact that the emergence of different hardware technologies has implications on the design of even basic data center mechanisms. We said that even the implementations of something like rpc would need to be reconsidered when using some of the newer types of interconnect technologies, or some of the new types of persistent memories.
 
 We said that the presence of heterogeneity and the goal to reach to ever larger scales while maintaining efficiencies, that this leads to exploration of new design trends such as disaggregation. These will pose some major need for redesign of the system software stack and the application services as well. We also looked at how different techniques for distributed computing come together in the development of resource management frameworks for large-scale systems. And for this specifically, we looked at Google's Borg system, the predecessor of Kubernetes.
 
