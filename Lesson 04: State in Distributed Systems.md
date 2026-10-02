@@ -64,11 +64,9 @@ When we capture the state of a process when trying to get to a consistent cut, o
 
 ## 4. System Model
 
-You will notice that in many of the lessons, before presenting an algorithm, we will describe the system model.
+You will notice that in many of the lessons, before presenting an algorithm, we will describe the system model. We already gave some examples of models in distributed systems and talked about why this is useful, why having models is useful. So it's important to understand any assumptions that are made in the model based on which some theory is built.
 
 ![Lesson 4 slide 12: 4. System Model](slides/lesson-04/page-12.png)
-
-We already gave some examples of models in distributed systems and talked about why this is useful, why having models is useful. So it's important to understand any assumptions that are made in the model based on which some theory is built.
 
 For the remainder of this lesson, we will work with a model of a system that looks like this. There are processes that exchange messages via channels. The channels are directed, meaning that there is a channel from $p$ to $q$ and then a separate channel from $q$ to $p$, if such messages exist or are allowed in the system. In this figure, for instance, there is no channel from $r$ to $q$. This model will also assume that all the channels are FIFO, meaning messages are delivered to the destination in the same order in which they're sent, and that all the channels are error-free, meaning that there won't be any corruption on the messages.
 
@@ -76,25 +74,29 @@ These last assumptions, they don't necessarily apply to arbitrary networks, but 
 
 ## 5. Finding a Consistent Cut: Algorithm in Action
 
-Now let's see what it takes to find the consistent cut.
-
-![Lesson 4 slide 14: 5. Finding a Consistent Cut: Algorithm in Action](slides/lesson-04/page-14.png)
-
-We'll basically see the algorithm in action first, based on the definitions we introduced and the simple model.
+Now let's see what it takes to find the consistent cut. We'll basically see the algorithm in action.
 
 ![Lesson 4 slide 15: 5. Finding a Consistent Cut: Algorithm in Action](slides/lesson-04/page-15.png)
 
-Let's first use this simple example with just two processes exchanging the sequence of messages to illustrate how this algorithm that we're yet to introduce, how it will behave, and then we will more formally define it. Our goal with this example is to see what is the behavior of the algorithm that we need, so that we can get a snapshot of the state of each of the components of the system, of all of the processes, of all of the channels, and to make sure that this snapshot will correspond to a consistent cut in the system. Let's use this notation to mark the state transitions of the two processes. They both start in $S_{p0}$, $S_{q0}$, some initial states, and upon each event, they transition to the next state. In this simple example, there are no internal events. Only the message sent and message receive operations are events that cause a state transition at any of the nodes in the system.
+Based on the definitions we introduced and the simple model, let's first use this simple example with just two processes exchanging the sequence of messages to illustrate how this algorithm that we're yet to introduce, how it will behave, and then we will more formally define it.
+
+![Lesson 4 slide 14: 5. Finding a Consistent Cut: Algorithm in Action](slides/lesson-04/page-14.png)
+
+Our goal with this example is to see what is the behavior of the algorithm that we need, so that we can get a snapshot of the state of each of the components of the system, of all of the processes, of all of the channels, and to make sure that this snapshot will correspond to a consistent cut in the system.
 
 ![Lesson 4 slide 16: 5. Finding a Consistent Cut: Algorithm in Action](slides/lesson-04/page-16.png)
+
+Let's use this notation to mark the state transitions of the two processes. They both start in $S_{p0}$, $S_{q0}$, some initial states, and upon each event, they transition to the next state. In this simple example, there are no internal events. Only the message sent and message receive operations are events that cause a state transition at any of the nodes in the system.
 
 Let's start with some point. Let's assume we are observing the system and we want to capture its snapshot, and the first thing we observe is some state $q$ that corresponds to this event $S_{q1}$. Let's mark that point.
 
 ![Lesson 4 slide 17: 5. Finding a Consistent Cut: Algorithm in Action](slides/lesson-04/page-17.png)
 
-So we observe this state, we record it, and then we send a special marker message to the other processes in the system in this case, to process $p$. Now that the marker arrives at $p$, let's say it arrives at $p$ when $p$ is in state $S_{p2}$. We know that in this state, $p$ has received the message that was sent on $q$, right? This was the marker. So we will record that the state of the channel from $q$ to $p$ is empty. We also know that $p$ has sent a message $m_{3}$ to $q$, so we need to find out what has happened to that message. What is the state of the channel from $p$ to $q$? To do that, we'll then send the marker from $p$ to $q$ on that channel. When the marker reaches $q$, we realize that we already captured its state. This is where we started after all, right? We captured the state $S_{q1}$. In that particular point of time when we captured the state in $S_{q1}$, process $q$ had already sent $m_{1}$ and there was nothing that was received. So this is the information that we have about $q$.
+So we observe this state, we record it, and then we send a special marker message to the other processes in the system in this case, to process $p$. Now that the marker arrives at $p$, let's say it arrives at $p$ when $p$ is in state $S_{p2}$. We know that in this state, $p$ has received the message that was sent on $q$, right? This was the marker. So we will record that the state of the channel from $q$ to $p$ is empty. We also know that $p$ has sent a message $m_{3}$ to $q$, so we need to find out what has happened to that message. What is the state of the channel from $p$ to $q$? To do that, we'll then send the marker from $p$ to $q$ on that channel.
 
 ![Lesson 4 slide 18: 5. Finding a Consistent Cut: Algorithm in Action](slides/lesson-04/page-18.png)
+
+When the marker reaches $q$, we realize that we already captured its state. This is where we started after all, right? We captured the state $S_{q1}$. In that particular point of time when we captured the state in $S_{q1}$, process $q$ had already sent $m_{1}$ and there was nothing that was received. So this is the information that we have about $q$.
 
 Therefore, given the state that we have of node $q$, the message $m_{3}$ which we know that was sent by $p$, has not yet been received and it's still somewhere in the channel from $p$ to $q$. Now, if we take a look at these events here, we see that $m_{3}$ arrived at process $q$ before the marker message. However, in terms of the snapshot information that we're capturing, we've already captured this information about process $q$ state $S_{q1}$, and therefore the state of the channel from $p$ to $q$ that corresponds to this state of process $q$ is such that the message $m_{3}$ is still somewhere in transit.
 
