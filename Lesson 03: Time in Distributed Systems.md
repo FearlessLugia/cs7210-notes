@@ -30,11 +30,13 @@ If we know the order of the operations across nodes in a system, in their potent
 
 ## 3. Why Is Measuring Time Hard in DS?
 
-So if we understand what time is, and if we agree that it is useful, what makes it so hard to use time in distributed systems? Why can we not just read the local clock at each node to find out the current time locally in the same manner as what we do if we had a single node system? If we understand that we need time in order to order the events in a distributed system in a correct way, let's see what are the ways we can make observations about the timing of events.
+So if we understand what time is, and if we agree that it is useful, what makes it so hard to use time in distributed systems? Why can we not just read the local clock at each node to find out the current time locally in the same manner as what we do if we had a single node system?
 
 ![Lesson 3 slide 7: 3. Why Is Measuring Time Hard in DS?](slides/lesson-03/page-07.png)
 
-One simple way is to rely on the receiver to make observations about the timing and ordering of events. Let's assume that each node in the system sends a message whenever an event occurs. When we have a system with three nodes as in this figure, let's say M3 receives messages from the other two nodes about the events that have taken place there. N1 sends a message. N2 sends a message, and N3 receives both of these. Let's say it first receives M1, then it receives M2, and then determines that the two events have occurred in the corresponding order.
+If we understand that we need time in order to order the events in a distributed system in a correct way, let's see what are the ways we can make observations about the timing of events.
+
+One simple way is to rely on the receiver to make observations about the timing and ordering of events. Let's assume that each node in the system sends a message whenever an event occurs. When we have a system with three nodes as in this figure, let's say N3 receives messages from the other two nodes about the events that have taken place there. N1 sends a message. N2 sends a message, and N3 receives both of these. Let's say it first receives M1, then it receives M2, and then determines that the two events have occurred in the corresponding order.
 
 ![Lesson 3 slide 8: 3. Why Is Measuring Time Hard in DS?](slides/lesson-03/page-08.png)
 
@@ -44,9 +46,11 @@ The problem is, we don't have any guarantees about the time it takes for these m
 
 ![Lesson 3 slide 9: 3. Why Is Measuring Time Hard in DS?](slides/lesson-03/page-09.png)
 
+If we have clocks tracking time at each node, each node can timestamp their messages with their local clock. When another node receives these messages, their timestamps can be checked, and the messages can be ordered based on their time steps. So even if there are message delays, M3 can compare t1 and t2 and know that M1 needs to be before M2.
+
 ![Lesson 3 slide 10: 3. Why Is Measuring Time Hard in DS?](slides/lesson-03/page-10.png)
 
-If we have clocks tracking time at each node, each node can timestamp their messages with their local clock. When another node receives these messages, their timestamps can be checked, and the messages can be ordered based on their time steps. So even if there are message delays, M3 can compare t1 and t2 and know that M1 needs to be before M2. Importantly, whichever node receives these messages, based on the timestamps, it will order the messages in the same way. In that sense, the order is unique and precisely in the order in which they were indeed generated.
+Importantly, whichever node receives these messages, based on the timestamps, it will order the messages in the same way. In that sense, the order is unique and precisely in the order in which they were indeed generated.
 
 ![Lesson 3 slide 11: 3. Why Is Measuring Time Hard in DS?](slides/lesson-03/page-11.png)
 
