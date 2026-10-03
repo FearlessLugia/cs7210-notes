@@ -10,7 +10,7 @@ In this lesson, we will talk about consensus, or about the ability of distribute
 
 Consensus is an important mechanism which is critical for making forward progress in distributed systems. We will present a theoretical discussion of some of the limitations of guaranteeing that a consensus can be reached, in other words, that progress can be made.
 
-For this, we will discuss the seminal work of Fischer Lynch and Paterson, also known as the FLP theorem. For this, we will talk about the paper impossibility of distributed consensus with one faulty processor. And as the title of their paper suggests, this theorem will prove that under most general assumption it is impossible to guarantee that consensus can be reached in a distributed systems in the event that there is even a single failure.
+For this, we will discuss the seminal work of Fischer Lynch and Paterson, also known as the FLP theorem. For this, we will talk about the paper impossibility of distributed consensus with one faulty process. And as the title of their paper suggests, this theorem will prove that under most general assumption it is impossible to guarantee that consensus can be reached in a distributed systems in the event that there is even a single failure.
 
 Given that there are distributed systems everywhere, this impossibility clearly has not prevented us from building real practical distributed systems. So we will then provide some hints toward how a practical solution can still be achieved despite this theorem. In the future lessons, we will go into more detail into concrete examples of such practical solutions.
 
@@ -88,7 +88,9 @@ Title of the paper is impossibility of distributed consensus with one faulty pro
 
 ![Lesson 5 slide 15: 5. FLP Theorem](slides/lesson-05/page-15.png)
 
-The quick intuition behind the proof is as follows: they considered the simplified system model of allowing asynchronous communication, but limiting the system to just one faulty process with a failstop failure model. Then, with the system model, they ask whether it is possible to identify a starting configuration and a legitimate admissible run such that the system does not reach a deciding state. Another way to ask this is to try to answer whether it is always possible to identify one admissible schedule in a system with one faulty processor, where all messages are delivered and where the system remains in a bivalent configuration, where basically no single decision can be agreed upon.
+The quick intuition behind the proof is as follows: they considered the simplified system model of allowing asynchronous communication, but limiting the system to just one faulty process with a failstop failure model. Then, with the system model, they ask whether it is possible to identify a starting configuration and a legitimate admissible run such that the system does not reach a deciding state.
+
+Another way to ask this is to try to answer whether it is always possible to identify one admissible schedule in a system with one faulty processor, where all messages are delivered and where the system remains in a bivalent configuration, where basically no single decision can be agreed upon.
 
 ## 6. Proof in a Nutshell
 

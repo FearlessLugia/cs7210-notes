@@ -192,7 +192,9 @@ On a more positive note, if we capture a state using this global snapshot algori
 
 ![Lesson 4 slide 32: 9. Benefits of Global State: Evaluate Stable Properties](slides/lesson-04/page-32.png)
 
-So let's talk about this some more. We know that $`S^{\ast}`$ is reachable from the state of the system in which the algorithm was initiated, and then we also know that the final state of the system, the state in which the system indeed is when the algorithm completes, is a state $`S_j`$ that is reachable from this capture state $`S^{\ast}`$. So what does this tell us if we know that a stable property is true in the capture state $`S^{\ast}`$? Or what does it tell us if we know that stable property is false in the capture state $`S^{\ast}`$?
+So let's talk about this some more. We know that $`S^{\ast}`$ is reachable from the state of the system in which the algorithm was initiated, and then we also know that the final state of the system, the state in which the system indeed is when the algorithm completes, is a state $`S_j`$ that is reachable from this capture state $`S^{\ast}`$.
+
+So what does this tell us if we know that a stable property is true in the capture state $`S^{\ast}`$? Or what does it tell us if we know that stable property is false in the capture state $`S^{\ast}`$?
 
 ![Lesson 4 slide 33: 9. Benefits of Global State: Evaluate Stable Properties](slides/lesson-04/page-33.png)
 
@@ -208,11 +210,13 @@ Now there are also unstable properties that are important.
 
 An unstable property is a property for which there is no guarantee that once it becomes true, it remains true for forever. For instance, buffer overflow is a temporary property. A race condition is a temporary property.
 
-What can we do about these unstable properties? We're capturing the state of the system $`S^{\ast}`$. We know that this is a state that may not have occurred for real, and then we're looking at some property, and that property we know is transient, may have existed for a period of time and then disappeared. Knowing whether or not that state, that property, is true in this state $`S^{\ast}`$, this hypothetical, this possible state $`S^{\ast}`$, is that actually useful? And in that sense, are distributed snapshots useful? The answer to that is still yes, because if we observe that an unstable property is true in some possible state $`S^{\ast}`$, that tells us that this property can possibly be true under some condition in the system.
-
-Knowing that there is a possibility for the system to be in a situation where there is a buffer overflow, or a race condition, or a spike in load, is still very useful information. It can tell us that we need to change something about the system in order to prevent such situations from possibly happening, or at least to make sure that we can deal with them in some way.
+What can we do about these unstable properties? We're capturing the state of the system $`S^{\ast}`$. We know that this is a state that may not have occurred for real, and then we're looking at some property, and that property we know is transient, may have existed for a period of time and then disappeared. Knowing whether or not that state, that property, is true in this state $`S^{\ast}`$, this hypothetical, this possible state $`S^{\ast}`$, is that actually useful? And in that sense, are distributed snapshots useful?
 
 ![Lesson 4 slide 36: 10. Definite vs. Possible State](slides/lesson-04/page-36.png)
+
+The answer to that is still yes, because if we observe that an unstable property is true in some possible state $`S^{\ast}`$, that tells us that this property can possibly be true under some condition in the system.
+
+Knowing that there is a possibility for the system to be in a situation where there is a buffer overflow, or a race condition, or a spike in load, is still very useful information. It can tell us that we need to change something about the system in order to prevent such situations from possibly happening, or at least to make sure that we can deal with them in some way.
 
 So if we determine that the system is in a state with a stable property, we know that that's definitely going to be the state of the system at the end eventually. If we determine that the system is in a state where an unstable property is true, then we know that there is a possibility for that unstable property to be true at the end of the execution.
 
