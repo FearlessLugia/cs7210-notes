@@ -24,9 +24,13 @@ We already mentioned briefly in the introductory lesson that there are different
 
 Considering the faults in the system, they may be transient, meaning they manifest themselves only once and then they disappear. They may be intermittent, meaning they manifest themselves occasionally, or they may be permanent. A permanent fault, once activated, it will have its effect persist until the fault is removed, meaning the node or the software bug are fixed.
 
-A fault can manifest itself in a fail-stop failure. In fail stop, one or more components of the distributed system stop working. They stop responding, and this is like a crash. A fault may lead to timing failures, which means that the affected system components behave outside of some timing expectations. This can lead to problems, for instance, if the implementation of the system relies on timeouts to decide whether it needs to re-transmit a message or to trigger some reconfiguration operation, for instance.
+A fault can manifest itself in a fail-stop failure. In fail stop, one or more components of the distributed system stop working. They stop responding, and this is like a crash.
 
-Omission faults are the ones where some actions are missing. For instance, a node can fail to send all messages as expected, or fail to receive all messages which were sent. And finally, the failures may be arbitrary. A it may continue to process and generate messages, but its behavior may be incorrect. And this may be either for malicious reasons or for just some arbitrary reasons.
+A fault may lead to timing failures, which means that the affected system components behave outside of some timing expectations. This can lead to problems, for instance, if the implementation of the system relies on timeouts to decide whether it needs to re-transmit a message or to trigger some reconfiguration operation, for instance.
+
+Omission faults are the ones where some actions are missing. For instance, a node can fail to send all messages as expected, or fail to receive all messages which were sent.
+
+And finally, the failures may be arbitrary. A it may continue to process and generate messages, but its behavior may be incorrect. And this may be either for malicious reasons or for just some arbitrary reasons.
 
 ### 2.1. Avoidance, Detection, and Recovery
 
@@ -44,9 +48,11 @@ Most generally, what we would like to achieve from a system is that even in the 
 
 ## 3. Rollback-Recovery Idea
 
-The basic idea of rollback recovery-based fault tolerance is as follows: in the event some failure is detected, the system rolls back to a previous state which we know is correct, and then continues from that point to re-execute the operation with default removed correctly.
+The basic idea of rollback recovery-based fault tolerance is as follows:
 
 ![Lesson 7 slide 8: 3. Rollback-Recovery Idea](slides/lesson-07/page-08.png)
+
+in the event some failure is detected, the system rolls back to a previous state which we know is correct, and then continues from that point to re-execute the operation with default removed correctly.
 
 By rollback here, we mean that the system will be in a state where any effects of the messages that had been exchanged from that point on are now removed. And similarly, if any of the nodes are represented by their internal state, then that state has been restored to correspond to the state of the nodes at the point of time chosen during the rollback.
 
@@ -56,17 +62,21 @@ So the first question here is: which previous states does the system need to rol
 
 Two things are worth highlighting here. First, the state that the system rolls back to may not be an actual state that the system has ever been in during its previous execution. If you recall our discussion of consistent cuts, consistent cuts correspond to system state that the system may pass through during some execution, but not necessarily a state that the system has passed through during the execution that's being analyzed.
 
+Second, you may wonder: how do we know how far back should this consistent cut be taken from? You can imagine how rollback recovery process can keep trying until it finds a cut far enough back, but can we have some better method to determine this?
+
 ![Lesson 7 slide 10: 3. Rollback-Recovery Idea](slides/lesson-07/page-10.png)
 
-Second, you may wonder: how do we know how far back should this consistent cut be taken from? You can imagine how rollback recovery process can keep trying until it finds a cut far enough back, but can we have some better method to determine this? So the question is: how do we capture this state? We can try to find it by progressively rolling back the execution to earlier points, potentially all the way to the beginning. This would mean that potentially a lot of work can be lost. So instead, we rely on two basic mechanisms to do this. One is checkpoint based, and the second one is log-based. We've actually, in a way, already looked at log-based methods during our discussion of Raft and Paxos. Here, we had to log all the messages, all the updates that were happening in the system, but we will come back briefly to this to explain how these are used during rollback and recovery.
+So the question is: how do we capture this state? We can try to find it by progressively rolling back the execution to earlier points, potentially all the way to the beginning. This would mean that potentially a lot of work can be lost. So instead, we rely on two basic mechanisms to do this. One is checkpoint based, and the second one is log-based. We've actually, in a way, already looked at log-based methods during our discussion of Raft and Paxos. Here, we had to log all the messages, all the updates that were happening in the system, but we will come back briefly to this to explain how these are used during rollback and recovery.
 
 ### 3.1. Granularity and Application Interfaces
 
 ![Lesson 7 slide 11: 3. Rollback-Recovery Idea](slides/lesson-07/page-11.png)
 
-Before we continue, we should also mention that the granularity at which all of these systems for fault tolerance operate may differ. They may be completely transparent, meaning the solutions are implemented at the system level and do not require any modifications to the applications or any use of some special APIs.
+Before we continue, we should also mention that the granularity at which all of these systems for fault tolerance operate may differ.
 
-In these transparent solutions, the rollback and recovery system needs to be concerned with each individual receive and send message, their success, their ordering, with each read access or update to a process state, and similarly, their success and ordering. This clearly can be an overkill for many settings. So often, to provide fault tolerance, systems explicitly expect that applications will be modified to use some special APIs. The standard way to do this is through use of transactional APIs, which group sets of related operations, as shown in this snippet. The system will then ensure that the transactions are performed atomically, meaning they either are successful or will be aborted and fully rolled back. If they're successful, meaning if they're committed, in that case, their effects will remain durable in the system. Note here that I'm oversimplifying this at this point, because the transaction itself may be distributed and it may correspond to a group of operations which are performed at more than one node.
+They may be completely transparent, meaning the solutions are implemented at the system level and do not require any modifications to the applications or any use of some special APIs. In these transparent solutions, the rollback and recovery system needs to be concerned with each individual receive and send message, their success, their ordering, with each read access or update to a process state, and similarly, their success and ordering.
+
+This clearly can be an overkill for many settings. So often, to provide fault tolerance, systems explicitly expect that applications will be modified to use some special APIs. The standard way to do this is through use of transactional APIs, which group sets of related operations, as shown in this snippet. The system will then ensure that the transactions are performed atomically, meaning they either are successful or will be aborted and fully rolled back. If they're successful, meaning if they're committed, in that case, their effects will remain durable in the system. Note here that I'm oversimplifying this at this point, because the transaction itself may be distributed and it may correspond to a group of operations which are performed at more than one node.
 
 Finally, there may be other application specific interfaces to rollback recovery. In the high performance computing domain, in the HPC domain, where we have huge applications executing across many thousands of nodes with massive amounts of state, using something like a transparent system level checkpoint will be a major overkill for performance. Fortunately, these applications typically know very well when and what they need to checkpoint in order to be able to recover, and they can pass this information to the underlying checkpointing recovery system, and so the checkpointing recovery system will precisely handle only that particular state.
 
@@ -96,7 +106,7 @@ The downside is that now recovery takes longer. We need to look at this log, fin
 
 ![Lesson 7 slide 15: 4. Basic Mechanisms](slides/lesson-07/page-15.png)
 
-The two mechanisms can be combined so that each node in the system periodically performs a checkpoint, and then between checkpoints, it logs its updates. Sending a message is also considered an update to the system, changes the state of the channel of the system, so this is also an operation that needs to be locked. By combining the two mechanisms, if there is a failure, the system doesn't necessarily have to go back to the beginning. Instead, it needs to return to the most recent checkpoint that corresponds to a consistent cut.
+The two mechanisms can be combined so that each node in the system periodically performs a checkpoint, and then between checkpoints, it logs its updates. Sending a message is also considered an update to the system, changes the state of the channel of the system, so this is also an operation that needs to be logged. By combining the two mechanisms, if there is a failure, the system doesn't necessarily have to go back to the beginning. Instead, it needs to return to the most recent checkpoint that corresponds to a consistent cut.
 
 This speeds up recovery, and also it's no longer necessary to keep very long logs. All data prior to some of these consistent checkpoints can be discarded. The downside is that the rollback recovery technique must incorporate a mechanism to detect a consistent cut from all of the individual node checkpoints.
 
@@ -186,7 +196,7 @@ The other basic mechanism we rely upon in order to implement recovery mechanisms
 
 Unlike checkpoints, logging offers opportunity to save on the amount of I/O that needs to be performed, but requires more complex recovery, because to rebuild the state of the system, the log needs to be used to first roll back and then to re-execute the execution.
 
-When considering distributed systems, the logs that are created by each of the nodes in the system must be such so that they specify deterministically a valid execution of the system, and they don't lead to orphaned events. For instance, in an example that's equivalent to the inconsistent cut illustration we used earlier, we cannot have a situation where upon failure we have a node $P_2$ information that the message has been received from $P_1$, but the log on $P_2$ shows no record of a message being sent.
+When considering distributed systems, the logs that are created by each of the nodes in the system must be such so that they specify deterministically a valid execution of the system, and they don't lead to orphaned events. For instance, in an example that's equivalent to the inconsistent cut illustration we used earlier, we cannot have a situation where upon failure we have a node $P_2$ information that the message has been received from $P_1$, but the log on $P_1$ shows no record of a message being sent.
 
 ![Lesson 7 slide 32: 9. Logging](slides/lesson-07/page-32.png)
 
@@ -200,7 +210,7 @@ Another approach is optimistic logging. In optimistic logging, there is an assum
 
 Now, we recognize that it may be hard to generally claim that this assumption that the log can be persisted always before a failure occurs, that this assumption can generally be true. For this reason, these solutions that rely on optimistic logging must introduce some additional mechanism to track dependencies, so in the event of a crash, they can restore the system to correct state. What this requires is that they need to correctly identify any incompleted operations, and then remove their effects.
 
-For any operations that lead to some externally visible events that cannot simply be undone, the output of such operations has to be delayed until the system is sure that the operation has, information about the operation has been persisted, and that these operations will not need to be imported.
+For any operations that lead to some externally visible events that cannot simply be undone, the output of such operations has to be delayed until the system is sure that the operation has, information about the operation has been persisted, and that these operations will not need to be aborted.
 
 In principle, what we need is some causality tracking mechanism. And approaches that are based on causality tracking can operate optimistically whenever there are no dependence related problems, but guarantee the similar properties of not having orphaned events, which is possible to guarantee with pessimistic logging.
 
@@ -226,8 +236,10 @@ Coordinated checkpointing, which has been the default strategy in HPC systems, i
 
 ## 11. Summary
 
-And now, to summarize the lesson, in this lesson, we discuss the problems related to dealing with failures in distributed systems, and we said that for distributed computations to be able to recover from failures, it is necessary for them to maintain information about their state and any changes that have been performed on that state in a consistent manner.
+And now, to summarize the lesson,
 
 ![Lesson 7 slide 37: 11. Summary](slides/lesson-07/page-37.png)
+
+in this lesson, we discuss the problems related to dealing with failures in distributed systems, and we said that for distributed computations to be able to recover from failures, it is necessary for them to maintain information about their state and any changes that have been performed on that state in a consistent manner.
 
 We said that there are two basic mechanisms that underpin general rollback recovery techniques: checkpointing and logging. We briefly described several design approaches to implementing a checkpoint or a logging based recovery system. Note that we use the terms operations and update interchangeably to refer to some unit of work in the system. In principle, this can correspond to an individual update to a variable, or it can correspond to an entire distributed transaction.
